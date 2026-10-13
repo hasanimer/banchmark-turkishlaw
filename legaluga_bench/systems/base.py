@@ -22,7 +22,7 @@ DEFAULT_RESULT_CHAR_LIMIT = 30_000
 class SystemConfig(BaseModel):
     id: str
     label: str
-    kind: str = Field(description="mcp_stdio | mcp_http | anthropic_web_search | none")
+    kind: str = Field(description="mcp_stdio | mcp_http | anthropic_web_search | composite | none")
     description: str = ""
     # mcp_stdio
     command: str | None = None
@@ -37,6 +37,8 @@ class SystemConfig(BaseModel):
     max_concurrency: int = 4
     call_timeout_s: float = 120.0
     result_char_limit: int = DEFAULT_RESULT_CHAR_LIMIT
+    # composite: üye sistem kimlikleri (aynı dosyada tanımlı)
+    members: list[str] = Field(default_factory=list)
     # anthropic_web_search
     max_uses: int = 8
     allowed_domains: list[str] = Field(default_factory=list)

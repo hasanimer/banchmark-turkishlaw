@@ -4,10 +4,12 @@
 # kind:
 #   mcp_http              Uzak MCP sunucusu (Streamable HTTP)
 #   mcp_stdio             Yerelde süreç olarak çalışan MCP sunucusu
+#   composite             Birden çok sistemin araçlarını tek sistem olarak sunar (members)
 #   anthropic_web_search  Genel web araması baz çizgisi (Anthropic sunucu tarafı aracı)
 #   none                  Kapalı kitap (araç yok)
 #
-# exclude_tools: araştırma dışı (belge üretimi vb.) araçlar bütün sistemlerde aynı ilkeyle çıkarılır.
+# exclude_tools: araştırma dışı (belge üretimi, imar hesabı vb.) araçlar bütün sistemlerde aynı ilkeyle çıkarılır.
+# Uzak sunucularda OAuth kullanılıyorsa, alınan erişim belirteci ilgili ortam değişkenine konur.
 
 systems:
   legaluga:
@@ -20,17 +22,39 @@ systems:
     # Legaluga Core'un semantik araması eşzamanlı çağrıları sınırlıyor.
     max_concurrency: 1
 
+  yargi_pro:
+    label: "Yargı PRO"
+    kind: mcp_http
+    url: "${YARGI_PRO_MCP_URL:-https://app.yargipro.com/mcp}"
+    headers:
+      Authorization: "Bearer ${YARGI_PRO_TOKEN}"
+
+  acik_kaynak:
+    label: "Yargı MCP + Mevzuat MCP (açık kaynak)"
+    kind: composite
+    members: [yargi_mcp, mevzuat_mcp]
+
   yargi_mcp:
     label: "Yargı MCP (açık kaynak, yerel)"
     kind: mcp_stdio
+    # pip install "yargi-mcp==0.2.2" "fastmcp>=3.4.4,<4" "mcp>=1.24,<2"  (ayrı bir sanal ortamda)
     command: "${YARGI_MCP_COMMAND:-yargi-mcp}"
-    exclude_tools: []
+    exclude_tools: ["check_government_servers_health"]
+    env:
+      BEDESTEN_RATE_MAX_WAIT_S: "60"
+      EMSAL_RATE_MAX_WAIT_S: "60"
     max_concurrency: 1
+
+  mevzuat_mcp:
+    label: "Mevzuat MCP (açık kaynak, barındırılan)"
+    kind: mcp_http
+    url: "${MEVZUAT_MCP_URL:-https://mevzuatmcp.fastmcp.app/mcp}"
+    max_concurrency: 2
 
   legal_data_hunter:
     label: "Legal Data Hunter"
     kind: mcp_http
-    url: "${LDH_MCP_URL}"
+    url: "${LDH_MCP_URL:-https://legaldatahunter.com/mcp}"
     headers:
       Authorization: "Bearer ${LDH_API_KEY}"
     exclude_tools: ["report_source_issue"]

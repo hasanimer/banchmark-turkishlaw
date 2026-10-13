@@ -41,10 +41,10 @@ def cmd_systems(args: argparse.Namespace) -> int:
         except MissingEnvError as e:
             status = f"eksik: {e}"
         print(f"{sid:22s} {cfg.kind:22s} {status}  — {cfg.label}")
-        if args.probe and status == "hazır" and cfg.kind.startswith("mcp"):
+        if args.probe and status == "hazır" and (cfg.kind.startswith("mcp") or cfg.kind == "composite"):
 
             async def probe(c=cfg) -> None:
-                async with make_provider(c) as p:
+                async with make_provider(c, configs) as p:
                     tools = await p.list_tools()
                     print(f"    {len(tools)} araç: " + ", ".join(t.name for t in tools))
 
@@ -105,7 +105,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     out = RESULTS_DIR / args.run_name
     out.mkdir(parents=True, exist_ok=True)
     (out / "run_config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-    counts = asyncio.run(run_benchmark([configs[s] for s in wanted], tasks, settings, args.run_name, args.concurrency))
+    counts = asyncio.run(run_benchmark([configs[s] for s in wanted], tasks, settings, args.run_name, args.concurrency,
+                                       configs))
     print(json.dumps(counts, ensure_ascii=False))
     return 0
 
@@ -150,6 +151,57 @@ def cmd_report(args: argparse.Namespace) -> int:
     md, js = write_report(args.run_name, tasks, labels)
     print(md.read_text(encoding="utf-8"))
     print(f"\nRapor: {md}\nJSON: {js}")
+    return 0
+
+
+def cmd_toolcall(args: argparse.Namespace) -> int:
+    """Bir sistemin araçlarını listeler ya da tek bir aracı çağırır (elle deneme ve harici koşular için)."""
+    from .systems import load_system_configs, make_provider
+
+    configs = load_system_configs()
+    if args.system not in configs:
+        print(f"Bilinmeyen sistem: {args.system}", file=sys.stderr)
+        return 2
+
+    async def go() -> int:
+        async with make_provider(configs[args.system], configs) as p:
+            tools = await p.list_tools()
+            if args.list or not args.tool:
+                for t in tools:
+                    print(json.dumps({"name": t.name, "description": t.description[:400],
+                                      "input_schema": t.input_schema}, ensure_ascii=False))
+                return 0
+            res = await p.call_tool(args.tool, json.loads(args.args or "{}"))
+            print(("HATA: " if res.is_error else "") + res.text)
+            return 1 if res.is_error else 0
+
+    return asyncio.run(go())
+
+
+def cmd_official(args: argparse.Namespace) -> int:
+    """Resmî kaynaklara (Bedesten) doğrudan erişim; altın veri üretimi ve elle denetim için."""
+    from .official.bedesten import ITEM_TYPES, BedestenClient, BedestenVerifier
+
+    async def go() -> object:
+        client = BedestenClient()
+        try:
+            if args.what == "article":
+                return await client.article_text(args.law, args.article)
+            if args.what == "search":
+                item = ITEM_TYPES.get(args.court, args.court)
+                return await client.search(args.phrase, item_type=item, birim=args.chamber,
+                                           start=args.start, end=args.end, page=args.page, size=10)
+            if args.what == "case":
+                v = BedestenVerifier(client)
+                c = {"court": args.court, "chamber": args.chamber, "esas": args.esas, "karar": args.karar}
+                return {"verdict": await v.verify_case(c), "hits": await client.find_case(c)}
+            if args.what == "doc":
+                return {"document_id": args.id, "text": await client.get_document_text(args.id)}
+            return None
+        finally:
+            await client.aclose()
+
+    print(json.dumps(asyncio.run(go()), ensure_ascii=False, indent=1))
     return 0
 
 
@@ -205,7 +257,31 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--run-name", required=True)
     s.set_defaults(fn=cmd_report)
 
+    s = sub.add_parser("toolcall", help="bir sistemin aracını doğrudan çağır")
+    s.add_argument("--system", required=True)
+    s.add_argument("--list", action="store_true", help="araçları listele")
+    s.add_argument("--tool")
+    s.add_argument("--args", help="JSON argümanlar")
+    s.set_defaults(fn=cmd_toolcall)
+
+    s = sub.add_parser("official", help="resmî kaynak (Bedesten) sorgusu")
+    s.add_argument("what", choices=["article", "search", "case", "doc"])
+    s.add_argument("--law", help="kanun numarası (article)")
+    s.add_argument("--article", help="madde numarası (article)")
+    s.add_argument("--phrase", help="arama ifadesi (search)")
+    s.add_argument("--court", default="yargitay", help="yargitay|danistay|bam|yerel")
+    s.add_argument("--chamber", help="Bedesten birimAdi (ör. '3. Hukuk Dairesi') ya da künyedeki daire")
+    s.add_argument("--start", help="karar tarihi alt sınırı (ISO, ör. 2020-01-01T00:00:00.000Z)")
+    s.add_argument("--end")
+    s.add_argument("--page", type=int, default=1)
+    s.add_argument("--esas")
+    s.add_argument("--karar")
+    s.add_argument("--id", help="Bedesten documentId (doc)")
+    s.set_defaults(fn=cmd_official)
+
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    if not args.verbose:
+        logging.getLogger("httpx").setLevel(logging.WARNING)
     return args.fn(args)

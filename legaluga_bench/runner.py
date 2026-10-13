@@ -37,6 +37,7 @@ async def run_system(
     settings: AgentSettings,
     run_name: str,
     concurrency: int = 4,
+    all_configs: dict[str, SystemConfig] | None = None,
 ) -> int:
     out = runs_path(run_name, cfg.id)
     done = completed_task_ids(out)
@@ -45,7 +46,7 @@ async def run_system(
         log.info("%s: bütün görevler zaten tamamlanmış", cfg.id)
         return 0
     sem = asyncio.Semaphore(max(1, concurrency))
-    async with make_provider(cfg) as provider:
+    async with make_provider(cfg, all_configs) as provider:
         tools = await provider.list_tools()
         log.info("%s: %d araç, %d görev", cfg.id, len(tools) + len(provider.server_tools()), len(pending))
 
@@ -66,10 +67,11 @@ async def run_benchmark(
     settings: AgentSettings,
     run_name: str,
     concurrency: int = 4,
+    all_configs: dict[str, SystemConfig] | None = None,
 ) -> dict[str, int]:
     client = anthropic.AsyncAnthropic(max_retries=4)
     counts: dict[str, int] = {}
     # Sistemler sırayla koşar: aynı anda tek bir sistemin sunucusuna yük bindirilir.
     for cfg in configs:
-        counts[cfg.id] = await run_system(client, cfg, tasks, settings, run_name, concurrency)
+        counts[cfg.id] = await run_system(client, cfg, tasks, settings, run_name, concurrency, all_configs)
     return counts
