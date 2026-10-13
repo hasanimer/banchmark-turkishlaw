@@ -1,9 +1,15 @@
 .env
 .env.*
+!.env.example
 .DS_Store
 __pycache__/
 *.pyc
 .pytest_cache/
-results/raw_outputs/
-results/scored_outputs/
-results/reports/
+.venv/
+
+# Koşu çıktıları ve önbellek (yayımlanacak raporlar ayrıca reports/ altına kopyalanır)
+results/
+
+# Telifli/özel veri (ÖSYM soruları, yayınevi denemeleri, indirilen kaynaklar) - public repoya girmez
+data/private/
+*.egg-info/
