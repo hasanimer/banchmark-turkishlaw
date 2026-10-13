@@ -47,14 +47,14 @@ def _ceza(n: int) -> tuple[str, ...]:
 
 
 STRATA: tuple[Stratum, ...] = (
-    Stratum("yargitay_hukuk", "YARGITAYKARARI", _hukuk(12), (2017, 2026), 36),
-    Stratum("yargitay_hgk", "YARGITAYKARARI", ("Hukuk Genel Kurulu",), (2014, 2026), 10),
-    Stratum("yargitay_ceza", "YARGITAYKARARI", _ceza(12), (2017, 2026), 24, phrase="suç"),
-    Stratum("yargitay_cgk", "YARGITAYKARARI", ("Ceza Genel Kurulu",), (2014, 2026), 6, phrase="suç"),
-    Stratum("danistay_daire", "DANISTAYKARAR", tuple(f"{i}. Daire" for i in range(2, 14)), (2016, 2026), 20),
+    Stratum("yargitay_hukuk", "YARGITAYKARARI", _hukuk(12), (2017, 2026), 30),
+    Stratum("yargitay_hgk", "YARGITAYKARARI", ("Hukuk Genel Kurulu",), (2014, 2026), 8),
+    Stratum("yargitay_ceza", "YARGITAYKARARI", _ceza(12), (2017, 2026), 20, phrase="suç"),
+    Stratum("yargitay_cgk", "YARGITAYKARARI", ("Ceza Genel Kurulu",), (2014, 2026), 5, phrase="suç"),
+    Stratum("danistay_daire", "DANISTAYKARAR", tuple(f"{i}. Daire" for i in range(2, 14)), (2016, 2026), 16),
     Stratum("danistay_kurul", "DANISTAYKARAR", ("İdare Dava Daireleri Kurulu", "Vergi Dava Daireleri Kurulu"),
-            (2014, 2026), 8),
-    Stratum("bam_hukuk", "ISTINAFHUKUK", (None,), (2019, 2026), 20),
+            (2014, 2026), 6),
+    Stratum("bam_hukuk", "ISTINAFHUKUK", (None,), (2019, 2026), 15),
 )
 
 
@@ -70,7 +70,7 @@ def _cache_text(doc_id: str, text: str) -> str:
 
 async def sample_decisions(
     seed: int = 20261013,
-    min_chars: int = 2500,
+    min_chars: int = 1500,
     max_chars: int = 60_000,
     client: BedestenClient | None = None,
 ) -> list[dict[str, Any]]:

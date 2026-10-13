@@ -69,6 +69,25 @@ def render_judge_prompt(question: str, rubric: list[dict[str, Any]], answer: str
     )
 
 
+def weighted_score(rubric: list[dict[str, Any]], criteria: list[dict[str, Any]]) -> float:
+    weights = {i: float(r.get("weight", 1)) for i, r in enumerate(rubric, 1)}
+    total = sum(weights.values()) or 1.0
+    got = sum(weights.get(int(c["index"]), 0.0) * float(c["score"]) for c in criteria)
+    return round(got / total, 4)
+
+
+def external_judge(judgments: dict[tuple[str, str], dict[str, Any]], task_id: str, system_id: str):
+    """Harici (ör. ayrı bir hakem oturumunda) verilmiş kararları judge_fn arayüzüyle döndürür."""
+
+    async def judge_fn(question: str, rubric: list[dict[str, Any]], answer: str, reference: str | None) -> dict[str, Any]:
+        j = judgments.get((task_id, system_id))
+        if j is None:
+            return {"error": "harici hakem kararı yok", "score": 0.0, "criteria": [], "kritik_hata": []}
+        return {**j, "score": weighted_score(rubric, j.get("criteria", [])), "judge_model": j.get("judge_model", "external")}
+
+    return judge_fn
+
+
 async def judge_answer(
     client: anthropic.AsyncAnthropic,
     question: str,
@@ -91,9 +110,6 @@ async def judge_answer(
         return {"error": "hakem reddetti", "score": 0.0, "criteria": [], "kritik_hata": []}
     text = next((b.text for b in response.content if getattr(b, "type", None) == "text"), "{}")
     data = json.loads(text)
-    weights = {i: float(r.get("weight", 1)) for i, r in enumerate(rubric, 1)}
-    total = sum(weights.values()) or 1.0
-    got = sum(weights.get(c["index"], 0.0) * float(c["score"]) for c in data.get("criteria", []))
-    data["score"] = round(got / total, 4)
+    data["score"] = weighted_score(rubric, data.get("criteria", []))
     data["judge_model"] = model
     return data

@@ -93,15 +93,16 @@ def build_report(run_name: str, tasks: dict[str, Task], labels: dict[str, str] |
 
     # Sınav: konu ve araç-ilgisi kırılımları
     breakdowns: dict[str, dict[str, dict[str, float]]] = {}
-    for key in ("subject", "tool_relevance", "session"):
+    for key in ("tier", "stale_risk", "subject", "tool_relevance", "session"):
         agg: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         for (sid, tr), items in by_sys_track.items():
             if tr != "exam":
                 continue
             for tid, s in items.items():
                 val = tasks[tid].meta.get(key) if tid in tasks else None
-                if val:
-                    agg[str(val)][sid].append(s.score)
+                if val is not None and val != "":
+                    label = {True: "evet", False: "hayır"}.get(val, val) if isinstance(val, bool) else val
+                    agg[str(label)][sid].append(s.score)
         breakdowns[key] = {g: {sid: mean(v) for sid, v in per.items()} for g, per in sorted(agg.items())}
 
     # Karar bulma: kaynak katmanına (mahkeme türü) göre kırılım
@@ -150,7 +151,9 @@ def render_markdown(rep: dict[str, Any]) -> str:
                 f"{_fmt(p['ci_low'])} – {_fmt(p['ci_high'])} | {'—' if mc is None else f'{mc:.3g}'} |"
             )
         lines.append("")
-    for key, title in (("tool_relevance", "Sınav: soru türüne göre"), ("subject", "Sınav: derse göre"),
+    for key, title in (("tier", "Sınav: güncel (2024+) / arşiv oturumlar"),
+                       ("stale_risk", "Sınav: sınavdan sonra mevzuatı değişmiş olabilecek sorular"),
+                       ("tool_relevance", "Sınav: soru türüne göre"), ("subject", "Sınav: derse göre"),
                        ("session", "Sınav: oturuma göre"), ("case_stratum", "Karar bulma: mahkemeye göre")):
         groups = rep["exam_breakdowns"].get(key) or {}
         if not groups:

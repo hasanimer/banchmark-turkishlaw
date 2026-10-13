@@ -87,6 +87,7 @@ def _merge_partials(rows: list[dict[str, Any]]) -> dict[str, Any]:
             ordered = sorted(rows, key=lambda r: min(r.get("pages") or [0]))
             best["stem"] = "\n".join(s for s in (r.get("stem") or "" for r in ordered) if s)
         best["partial"] = not (best.get("stem") and all(opts.get(k) for k in OPTION_LETTERS))
+        best["has_figure"] = any(r.get("has_figure") for r in rows)
         best["notes"] = " | ".join(n for n in (r.get("notes") or "" for r in rows) if n)
         best["_merged_from"] = len(rows)
         best["_stems_seen"] = len({_norm_ws(s) for s in stems})
@@ -174,6 +175,8 @@ def build(
                     gold={"answer": q["answer"].upper(), "answer_source": "ÖSYM aday ekranı cevap anahtarı"},
                     meta={
                         "exam": sess.exam,
+                        # 2024 ve sonrası oturumlar ana puanı oluşturur; öncekiler arşiv olarak ayrı raporlanır.
+                        "tier": "guncel" if sess.year >= 2024 else "arsiv",
                         "session": sess.label,
                         "session_slug": slug,
                         "year": sess.year,

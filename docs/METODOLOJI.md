@@ -117,8 +117,9 @@ repoda yer almaz (`data/private/` git dışındadır). Repoda yalnız sayılar v
 
 **Kaynak.** Bedesten'den sabit tohumla, katmanlı (Yargıtay hukuk/ceza daireleri ve genel
 kurulları, Danıştay daireleri ve kurulları, bölge adliye mahkemeleri; 2014–2026) rastgele
-örneklenen kararlar (`legaluga_bench/official/gold_cases.py`). Çok kısa (2.500 karakterden az)
-kararlar ayırt edici içerik taşımadığı için örneklemden çıkarılır.
+örneklenen kararlar (`legaluga_bench/official/gold_cases.py`). Çok kısa (1.500 karakterden az)
+kararlar ayırt edici içerik taşımadığı için örneklemden çıkarılır; ayrıca anlatımı yazan adım,
+yalnız usule ilişkin kalıp kararları ayırt edilemez sayarak eler.
 
 **Görev.** Kararın resmî tam metninden yazılmış, numara ve tarih içermeyen, avukat dilinde
 bir olay ve sonuç anlatımı. Ajandan bu kararı bulup künyesini (en çok 3 aday) vermesi istenir.

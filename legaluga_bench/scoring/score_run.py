@@ -30,9 +30,12 @@ async def score_run(
     judge_client: Any = None,
     judge_model: str | None = None,
     verifier: CitationVerifier | None = None,
+    judgments: dict[tuple[str, str], dict[str, Any]] | None = None,
+    export_judge_requests: Path | None = None,
 ) -> Path:
-    from .judge import judge_answer
+    from .judge import JUDGE_SCHEMA, JUDGE_SYSTEM, external_judge, judge_answer, render_judge_prompt
 
+    requests: list[dict[str, Any]] = []
     scores: list[ScoreRecord] = []
     missing = 0
     for rec in latest_runs(run_name):
@@ -43,13 +46,24 @@ async def score_run(
         if task.track in SYNC_SCORERS:
             scores.append(SYNC_SCORERS[task.track](task, rec))
         elif task.track == "research":
-            if judge_client is None:
+            if export_judge_requests is not None:
+                answer = str(rec.parsed.get("answer") or "") or rec.final_text
+                requests.append({"task_id": task.id, "system_id": rec.system_id, "system": JUDGE_SYSTEM,
+                                 "prompt": render_judge_prompt(task.prompt, task.gold.get("rubric") or [], answer,
+                                                               task.gold.get("reference_answer")),
+                                 "schema": JUDGE_SCHEMA})
+            if judgments is not None:
+                judge_fn = external_judge(judgments, task.id, rec.system_id)
+            elif judge_client is not None:
+                judge_fn = functools.partial(judge_answer, judge_client, model=judge_model)
+            else:
                 log.warning("research görevi %s hakemsiz atlandı", task.id)
                 continue
-            judge_fn = functools.partial(judge_answer, judge_client, model=judge_model)
             scores.append(await score_research(task, rec, judge_fn, verifier))
     if missing:
         log.warning("%d kayıt için görev tanımı bulunamadı (görev seti değişmiş olabilir)", missing)
+    if export_judge_requests is not None:
+        write_jsonl(export_judge_requests, requests)
     out = RESULTS_DIR / run_name / "scores.jsonl"
     write_jsonl(out, sorted(scores, key=lambda s: (s.system_id, s.task_id)))
     return out

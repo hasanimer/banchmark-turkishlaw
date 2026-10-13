@@ -20,7 +20,7 @@ import os
 import sys
 from collections import Counter
 
-from .io import RESULTS_DIR, append_jsonl, read_models
+from .io import RESULTS_DIR, append_jsonl, read_jsonl, read_models
 from .schema import TRACKS, RunRecord
 
 
@@ -128,7 +128,12 @@ def cmd_score(args: argparse.Namespace) -> int:
     tasks = {t.id: t for t in load_tasks()}
     judge_client = None
     verifier = None
-    if not args.no_judge:
+    judgments = None
+    if args.judgments_file:
+        judgments = {}
+        for row in read_jsonl(args.judgments_file):
+            judgments[(row["task_id"], row["system_id"])] = row
+    elif not args.no_judge and not args.export_judge_requests:
         import anthropic
 
         judge_client = anthropic.AsyncAnthropic(max_retries=4)
@@ -136,7 +141,8 @@ def cmd_score(args: argparse.Namespace) -> int:
         from .official.bedesten import BedestenVerifier
 
         verifier = BedestenVerifier()
-    out = asyncio.run(score_run(args.run_name, tasks, judge_client, args.judge_model, verifier))
+    out = asyncio.run(score_run(args.run_name, tasks, judge_client, args.judge_model, verifier, judgments,
+                                args.export_judge_requests))
     print(f"Puanlar: {out}")
     return 0
 
@@ -151,6 +157,48 @@ def cmd_report(args: argparse.Namespace) -> int:
     md, js = write_report(args.run_name, tasks, labels)
     print(md.read_text(encoding="utf-8"))
     print(f"\nRapor: {md}\nJSON: {js}")
+    return 0
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    """Bir görevin ajana gösterilecek istemlerini harness'taki hâliyle yazdırır (harici koşucular için)."""
+    from .agent.prompts import render_system_prompt, render_task_prompt
+    from .tasks import load_tasks
+
+    tasks = {t.id: t for t in load_tasks()}
+    if args.task_id not in tasks:
+        print(f"Bilinmeyen görev: {args.task_id}", file=sys.stderr)
+        return 2
+    t = tasks[args.task_id]
+    print(json.dumps({"task_id": t.id, "track": t.track, "system": render_system_prompt(args.today),
+                      "user": render_task_prompt(t)}, ensure_ascii=False, indent=1))
+    return 0
+
+
+def cmd_record(args: argparse.Namespace) -> int:
+    """Harness dışında (ör. elle ya da başka bir istemcide) üretilmiş bir cevabı koşu kaydı olarak ekler."""
+    import uuid
+    from datetime import datetime, timezone
+
+    from .agent.parse import parse_final_json
+    from .schema import ToolCallLog
+    from .tasks import load_tasks
+
+    tasks = {t.id: t for t in load_tasks()}
+    if args.task_id not in tasks:
+        print(f"Bilinmeyen görev: {args.task_id}", file=sys.stderr)
+        return 2
+    t = tasks[args.task_id]
+    text = open(args.text_file, encoding="utf-8").read()
+    calls = [ToolCallLog(name=n.strip()) for n in (args.tools_used or "").split(",") if n.strip()]
+    rec = RunRecord(
+        run_id=uuid.uuid4().hex, task_id=t.id, track=t.track, system_id=args.system, model=args.model or "external",
+        runner="external", started_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        latency_s=args.latency or 0.0, n_tool_calls=args.n_tool_calls if args.n_tool_calls is not None else len(calls),
+        tool_calls=calls, final_text=text, parsed=parse_final_json(text, t.track), error=args.error,
+    )
+    append_jsonl(RESULTS_DIR / args.run_name / "runs" / f"{args.system}.jsonl", rec)
+    print(json.dumps({"ok": True, "task_id": t.id, "system": args.system, "parsed": rec.parsed}, ensure_ascii=False))
     return 0
 
 
@@ -251,11 +299,32 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--judge-model")
     s.add_argument("--no-judge", action="store_true", help="açık araştırma görevlerini puanlama")
     s.add_argument("--no-verify", action="store_true", help="atıfları resmî kaynakta doğrulama")
+    s.add_argument("--export-judge-requests", type=lambda x: __import__("pathlib").Path(x),
+                   help="körleştirilmiş hakem istemlerini JSONL olarak yaz (harici hakem için)")
+    s.add_argument("--judgments-file", type=lambda x: __import__("pathlib").Path(x),
+                   help="harici hakem kararları (JSONL: task_id, system_id, criteria, kritik_hata)")
     s.set_defaults(fn=cmd_score)
 
     s = sub.add_parser("report", help="rapor üret")
     s.add_argument("--run-name", required=True)
     s.set_defaults(fn=cmd_report)
+
+    s = sub.add_parser("render", help="görevin istemlerini harness'taki hâliyle yazdır")
+    s.add_argument("--task-id", required=True)
+    s.add_argument("--today", default="13.10.2026")
+    s.set_defaults(fn=cmd_render)
+
+    s = sub.add_parser("record", help="harici üretilmiş bir cevabı koşu kaydı olarak ekle")
+    s.add_argument("--run-name", required=True)
+    s.add_argument("--system", required=True)
+    s.add_argument("--task-id", required=True)
+    s.add_argument("--text-file", required=True, help="ajanın son cevabının tam metni")
+    s.add_argument("--tools-used", help="virgülle ayrılmış araç adları (çağrı sırasıyla)")
+    s.add_argument("--n-tool-calls", type=int)
+    s.add_argument("--latency", type=float)
+    s.add_argument("--model")
+    s.add_argument("--error")
+    s.set_defaults(fn=cmd_record)
 
     s = sub.add_parser("toolcall", help="bir sistemin aracını doğrudan çağır")
     s.add_argument("--system", required=True)
