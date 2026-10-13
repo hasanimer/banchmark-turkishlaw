@@ -6,7 +6,7 @@ from pathlib import Path
 from src import config, models
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("TRLawBench.evaluator")
+logger = logging.getLogger("LegalugaLawBenchmark.evaluator")
 
 def evaluate_mcq(model_answer: str, expected_answer: str) -> dict:
     """Robust parser to evaluate multiple-choice answers deterministically."""

@@ -13,7 +13,7 @@ from src import config
 
 # Set page config
 st.set_page_config(
-    page_title="Imer Hukuk LLM Benchmark Dashboard",
+    page_title="Legaluga Law Benchmark Dashboard",
     page_icon="⚖️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -112,8 +112,8 @@ def save_scored_run(filename: str, run_data: dict):
         json.dump(run_data, f, ensure_ascii=False, indent=2)
 
 # Main structure
-st.markdown("<h1 class='main-title' id='title-main'>TRLawBench-Practice</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle' id='title-sub'>İmer Hukuk LLM Benchmark - Avukatlık Pratiği Ölçümü</p>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title' id='title-main'>Legaluga Law Benchmark</h1>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle' id='title-sub'>Türk Hukuku LLM Benchmark - Avukatlık Pratiği Ölçümü</p>", unsafe_allow_html=True)
 
 # Sidebar filters
 st.sidebar.markdown("<h3 id='sb-hdr'>Ayarlar & Filtreler</h3>", unsafe_allow_html=True)

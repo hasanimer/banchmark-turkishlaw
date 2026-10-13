@@ -6,7 +6,7 @@ from src import config
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("TRLawBench.models")
+logger = logging.getLogger("LegalugaLawBenchmark.models")
 
 # Setup litellm API keys
 if config.OPENAI_API_KEY:

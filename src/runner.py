@@ -115,7 +115,7 @@ def run_evaluation(model_name: str, mode: str = "closed_book", areas: list = Non
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="TRLawBench-Practice Runner")
+    parser = argparse.ArgumentParser(description="Legaluga Law Benchmark Runner")
     parser.add_argument("model", nargs="?", default="gemini-1.5-flash", help="Candidate model name (e.g. gemini-1.5-flash)")
     parser.add_argument("mode", nargs="?", default="closed_book", help="Evaluation mode (closed_book or open_book)")
     parser.add_argument("--limit", type=int, default=None, help="Limit the number of questions to evaluate (default: None for full run)")

@@ -1,6 +1,6 @@
-# TRLawBench-Practice / ImerBench-Legal
+# Legaluga Law Benchmark
 
-TRLawBench-Practice (public name) / ImerBench-Legal (private name) is a specialized evaluation benchmark designed to measure the capability of Large Language Models (LLMs) in performing daily tasks of a Turkish lawyer.
+Legaluga Law Benchmark is a specialized evaluation benchmark designed to measure the capability of Large Language Models (LLMs) in performing daily tasks of a Turkish lawyer.
 
 Unlike standard multiple-choice legal benchmarks (e.g. TRLawBench), this benchmark focuses on **attorney workflows**, assessing:
 - **Hukuki Doğruluk & Muhakeme**: Correct application of laws to concrete cases.
