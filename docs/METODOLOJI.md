@@ -40,16 +40,27 @@ Sistemler `configs/systems.yaml` dosyasında tanımlanır:
 
 | Kimlik | Sistem | Erişim |
 |---|---|---|
-| `legaluga` | Legaluga MCP | Uzak MCP (Streamable HTTP), belirteçle |
-| `yargi_mcp` | Yargı MCP (açık kaynak) | Yerel MCP süreci (stdio) |
+| `legaluga` | Legaluga MCP | Uzak MCP (Streamable HTTP), OAuth belirteci |
+| `yargi_pro` | Yargı PRO (ticari) | Uzak MCP, OAuth / kurumsal anahtar |
+| `acik_kaynak` | Yargı MCP + Mevzuat MCP (açık kaynak) | Yargı MCP yerel (stdio) + Mevzuat MCP barındırılan; tek sistem olarak |
 | `legal_data_hunter` | Legal Data Hunter | Uzak MCP, anahtarla |
 | `web_search` | Genel web araması | Anthropic sunucu tarafı `web_search` aracı |
 | `closed_book` | Araçsız | — |
 
+Açık kaynak araçlar içtihadı ve mevzuatı ayrı sunucularda verdiği için kullanıcıların yaptığı
+gibi birlikte (`composite`) ölçülür. Lexpera, Kazancı, Sinerji gibi yalnız web arayüzü olan
+ticari ürünlerin herkese açık bir API'si ya da MCP sunucusu bulunamadığından otomatik koşuya
+alınmamıştır.
+
 Yeni bir sistem eklemek için YAML'a bir giriş yazmak yeterlidir (MCP sunucusu olması koşuluyla).
 
 **Araç politikası.** Her sistemin araştırma araçları, sunucunun kendi açıklamalarıyla
-olduğu gibi ajana verilir; araç açıklamalarının kalitesi ürünün parçası sayılır. Yalnız
+olduğu gibi ajana verilir; araç açıklamalarının kalitesi ürünün parçası sayılır. Sunucunun
+MCP `initialize` yanıtındaki talimatları da (varsa), Claude gibi MCP istemcilerinin yaptığı
+gibi sistem isteminin sonuna ayrı bir blok olarak eklenir; bu seçim `use_server_instructions`
+ile kapatılabilir ve her koşuda kaydedilir. Koşu başında her sistemin sunucu sürümü, araç
+listesi ve araç şemalarının özeti (`results/<koşu>/systems/<sistem>.json`) saklanır; böylece
+koşular arasında sunucu tarafında yapılan değişiklikler görülebilir. Yalnız
 araştırma dışı işler (belge/dilekçe üretimi, imar hesapları gibi) bütün sistemlerde aynı ilkeyle
 çıkarılır. Her araç çıktısı 30.000 karakterle sınırlanır (bütün sistemlere aynı sınır).
 
@@ -158,6 +169,10 @@ sadakati (madde metnindeki zorunlu ifadelerin ne kadarının aynen aktarıldığ
 - Genel puan, bütün track'leri koşan sistemler için track ortalamalarının eşit ağırlıklı ortalamasıdır.
 - Maliyet ve işletim göstergeleri: ortalama araç çağrısı, süre, girdi/çıktı belirteci, hata
   oranı ve araç hatası oranı.
+- **Dayanak oranı (grounding):** cevapta verilen karar künyelerinden esas ve karar numarası
+  ajanın o görevdeki araç çıktılarında gerçekten geçenlerin oranı. Künyenin modelin belleğinden
+  değil aracın döndürdüğü kaynaktan geldiğini gösterir; araçsız sistemlerde tanımsızdır.
+- **Uydurma atıf oranı:** açık araştırma cevaplarındaki atıflardan resmî kaynakta bulunamayanların oranı.
 
 ## 7. Bilinen sınırlar
 
@@ -175,7 +190,24 @@ sadakati (madde metnindeki zorunlu ifadelerin ne kadarının aynen aktarıldığ
 - **Mevzuat değişiklikleri.** Eski sınav sorularının cevapları sonraki değişikliklerle
   güncelliğini yitirebilir; bu sorular işaretlenir.
 
-## 8. Yeniden üretim
+## 8. Önceki çalışmalar
+
+- **TRLawBench** (Said Sürücü): geçmiş ÖSYM sorularından 97 çoktan seçmeli soru; araç
+  değerlendirmesi yok. Ticari kullanım yasak olduğu için soruları kullanılmamıştır; sınav
+  track'i doğrudan ÖSYM kaynaklarından yeniden kurulmuştur.
+- **mecellem-legal-bench** (NewMind AI): rubrikli açık uçlu Türkçe hukuk soruları ve araç
+  çıktısına dayanma metriği; açık araştırma track'i ve dayanak oranı için yöntemsel öncüldür.
+- Türkçe mevzuat atfı uydurma benchmark'ı (LawChatAI) ve İngilizce atıf denetimi çalışmaları
+  atıf denetimi track'indeki hata türlerine (yanlış daire, numara, tarih, olmayan karar) ilham vermiştir.
+
+Bildiğimiz kadarıyla bu benchmark, Türk hukuku araştırma araçlarını (MCP sunucularını) aynı
+ajan üzerinden doğrudan karşılaştıran ilk çalışmadır.
+
+**Ortak derlem uyarısı.** Birçok araç aynı açık karar derleminden (≈11 milyon künye, CC0)
+yararlanmaktadır. Altın veri bu derlemden değil, doğrudan resmî kaynaklardan canlı olarak
+alınır ve alındığı an ile özetiyle saklanır.
+
+## 9. Yeniden üretim
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e '.[dev]'

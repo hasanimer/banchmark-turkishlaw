@@ -51,6 +51,14 @@ def norm_number(value: Any) -> str | None:
     return f"{m.group(1)}/{int(m.group(2))}"
 
 
+_ANY_NUM_RE = re.compile(r"(?<!\d)(\d{4})\s*/\s*(?:\d{1,2}\s*-\s*)?0*(\d{1,7})(?!\d)")
+
+
+def numbers_in(text: str) -> list[str]:
+    """Metindeki bütün YYYY/N numaraları (JSON alanları dahil), normalleştirilmiş: '2019/1234'."""
+    return [f"{y}/{int(n)}" for y, n in _ANY_NUM_RE.findall(text or "")]
+
+
 def strip_gk_prefix(num: str | None) -> str | None:
     """'2013/7-591' -> '2013/591' (genel kurul esasında daire öneki olmadan karşılaştırma)."""
     if not num:

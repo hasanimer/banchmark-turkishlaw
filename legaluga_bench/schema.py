@@ -41,6 +41,8 @@ class ToolCallLog(BaseModel):
     latency_s: float = 0.0
     result_chars: int = 0
     result_excerpt: str = ""
+    # Araç çıktısında geçen YYYY/N numaraları (esas/karar/başvuru); dayanak (grounding) metriği için.
+    numbers_seen: list[str] = Field(default_factory=list)
 
 
 class RunRecord(BaseModel):

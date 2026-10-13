@@ -18,6 +18,7 @@ from typing import Any
 import anthropic
 
 from ..schema import RunRecord, Task, ToolCallLog
+from ..scoring.citations import numbers_in
 from ..systems.base import ToolProvider
 from .parse import parse_final_json
 from .prompts import render_system_prompt, render_task_prompt
@@ -40,6 +41,8 @@ class AgentSettings:
     max_tool_calls: int = 20
     task_timeout_s: float = 900.0
     today: str = ""
+    # MCP sunucusunun initialize talimatlarını sistem istemine ekle (Claude gibi istemcilerin davranışı).
+    use_server_instructions: bool = True
 
     def __post_init__(self) -> None:
         if not self.model:
@@ -76,6 +79,7 @@ async def _run_tool(provider: ToolProvider, block: Any) -> tuple[dict[str, Any],
         latency_s=round(latency, 3),
         result_chars=len(result.text),
         result_excerpt=result.text[:300],
+        numbers_seen=sorted(set(numbers_in(result.text))),
     )
     tool_result: dict[str, Any] = {
         "type": "tool_result",
@@ -128,7 +132,9 @@ async def _loop(
     params: dict[str, Any] = {
         "model": settings.model,
         "max_tokens": settings.max_tokens,
-        "system": render_system_prompt(settings.today),
+        "system": render_system_prompt(
+            settings.today, provider.instructions if settings.use_server_instructions else ""
+        ),
         "output_config": {"effort": settings.effort},
         "cache_control": {"type": "ephemeral"},
     }

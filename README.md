@@ -1,78 +1,95 @@
 # Legaluga Law Benchmark
 
-Legaluga Law Benchmark is a specialized evaluation benchmark designed to measure the capability of Large Language Models (LLMs) in performing daily tasks of a Turkish lawyer.
+Türk hukuku araştırma araçlarını, **aynı yapay zekâ ajanına araç olarak verildiklerinde** ne
+kadar doğru, kaynağa dayalı ve uydurmasız sonuç ürettiklerine göre karşılaştıran açık benchmark.
 
-Unlike standard multiple-choice legal benchmarks (e.g. TRLawBench), this benchmark focuses on **attorney workflows**, assessing:
-- **Hukuki Doğruluk & Muhakeme**: Correct application of laws to concrete cases.
-- **Süre Hesaplama**: Step-by-step deadline calculations according to the Turkish Execution and Civil Procedure laws (İİK, HMK, CMK, İYUK).
-- **Belge Üretimi**: Quality and style of drafting notifications (*ihtarname*), petitions, contracts, and court declarations fitting UYAP and Turkish court practice.
-- **Hata Yakalama / Tuzaklar**: The model's capacity to detect legal errors, obsolete or abolished provisions, and fabricated citations (anti-hallucination).
+Ajan modeli, istem, araç bütçesi ve puanlama bütün sistemlerde aynıdır; değişen yalnız ajana
+verilen araç kümesidir (MCP sunucusu). Araçsız (kapalı kitap) ve genel web araması baz
+çizgileri, bir aracın modele ne kattığını ayırmak için her koşuda yer alır.
 
----
+Altın cevaplar yalnız **resmî kaynaklardan** gelir: ÖSYM cevap anahtarları, Adalet Bakanlığı
+Bedesten servisi (karar ve mevzuat) ve mevzuat.gov.tr. Ayrıntılar ve tarafsızlık önlemleri:
+[docs/METODOLOJI.md](docs/METODOLOJI.md).
 
-## Folder Structure
+> **Çıkar çatışması beyanı:** Benchmark, test edilen sistemlerden biri olan Legaluga'nın ekibi
+> tarafından hazırlanmıştır. Bu yüzden altın veri hiçbir test edilen sistemden üretilmez, hakem
+> kördür, kod/istem/ham çıktılar açıktır ve rakipler kendi koşularını aynı harness ile yapabilir.
 
-- `data/questions/`: Contains JSONL question databases for each law area (İcra, Kira, İş, Ceza, Tazminat, İdare/Vergi, Avukatlık/UYAP, Aile/Miras).
-- `prompts/`: Standardized prompt templates for evaluations (`closed_book`, `open_book`, `llm_judge_rubric`).
-- `src/`: Core Python modules.
-  - `config.py`: Environment configurations and model mapping.
-  - `models.py`: API wrapper using LiteLLM.
-  - `runner.py`: Orchestrates running evaluations against candidate models.
-  - `evaluator.py`: Automatic deterministic (MCQ) and LLM-Judge grading pipeline.
-- `results/`: Output directories for raw answers, graded outputs, and compiled reports.
-- `dashboard/`: Streamlit dashboard code for leaderboards and human review.
+## Track'ler
 
----
+| Track | Ne ölçer | Altın veri | Puan |
+|---|---|---|---|
+| `exam` | Gerçek sınav soruları (HMGS, hâkim-savcı adaylığı, KPSS hukuk) | ÖSYM cevap anahtarı | Doğru şık |
+| `statute` | Yürürlükteki mevzuatı bulma ve doğru aktarma | Bedesten mevzuat (resmî madde metni) | Cevap + madde + aktarım sadakati |
+| `case_lookup` | Anlatılan kararı bulma | Bedesten'den tohumlu rastgele örneklem | MRR@3 |
+| `citation_check` | Dilekçedeki uydurma/hatalı künyeleri yakalama | Bedesten'de doğrulanmış gerçek ve uydurma künyeler | Atıf başına doğru hüküm |
+| `research` | Gerekçeli hukuki araştırma | Resmî kaynağa dayalı rubrik | Kör hakem + otomatik atıf doğrulama |
 
-## Quick Start
+## Sistemler
 
-### 1. Installation
+`configs/systems.yaml` içinde tanımlıdır: Legaluga MCP, Yargı PRO, Yargı MCP + Mevzuat MCP
+(açık kaynak), Legal Data Hunter, genel web araması ve kapalı kitap. MCP sunucusu olan her araç
+YAML'a bir giriş eklenerek karşılaştırmaya katılabilir (stdio ya da Streamable HTTP; birden çok
+sunucu `composite` ile tek sistem yapılabilir).
 
-Install the required dependencies:
+## Kurulum
+
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+.venv/bin/pip install -e '.[dev]'
+cp .env.example .env    # LBENCH_AGENT_MODEL, LBENCH_JUDGE_MODEL, ANTHROPIC_API_KEY ve sistem belirteçleri
 ```
 
-### 2. Configure Environment
+Yargı MCP yerelde çalıştırılır; bağımlılık çakışmasını önlemek için ayrı bir sanal ortama kurun:
 
-Copy `.env.example` to `.env` and fill in your API keys:
 ```bash
-cp .env.example .env
+python -m venv ~/.venvs/yargi && ~/.venvs/yargi/bin/pip install "yargi-mcp==0.2.2" "fastmcp>=3.4.4,<4" "mcp>=1.24,<2"
+echo "YARGI_MCP_COMMAND=$HOME/.venvs/yargi/bin/yargi-mcp" >> .env
 ```
 
-### 3. Seed Dataset (MVP 80 Tasks)
+## Kullanım
 
-Generate the initial set of 80 realistic legal tasks (10 per area):
 ```bash
-python3 scripts/seed_questions.py
+python -m legaluga_bench systems --probe                  # sistemler hazır mı, kaç araç var
+python -m legaluga_bench tasks                            # görev setinin özeti
+python -m legaluga_bench run --run-name pilot \
+    --systems legaluga,acik_kaynak,web_search,closed_book \
+    --tracks exam,statute,case_lookup,citation_check,research \
+    --limit 50 --today 13.10.2026
+python -m legaluga_bench score --run-name pilot          # puanla (hakem + resmî atıf doğrulama)
+python -m legaluga_bench report --run-name pilot         # results/pilot/report.md
 ```
 
-### 4. Run Candidate Evaluations
+Yardımcı komutlar:
 
-To run evaluation on a candidate model (e.g., `gemini-1.5-flash` in `closed_book` mode):
 ```bash
-python3 -m src.runner gemini-1.5-flash closed_book
+python -m legaluga_bench toolcall --system acik_kaynak --list                 # bir sistemin araçları
+python -m legaluga_bench official article --law 6098 --article 344            # resmî madde metni
+python -m legaluga_bench official case --court yargitay --chamber "3. HD" --esas 2010/119 --karar 2010/478
 ```
-This writes the candidate's raw answers to `results/raw_outputs/run_<timestamp>_gemini-1.5-flash_closed_book.json`.
 
-*Note: The script currently defaults to running a small limit (2 questions) for testing when executed directly. To run the full set or custom options, import the `run_evaluation` function or modify the limit.*
+Koşular kaldığı yerden devam eder; her sistem/görev için ham kayıtlar (araç çağrıları, süreler,
+belirteç kullanımı) `results/<koşu>/runs/<sistem>.jsonl` dosyasına yazılır.
 
-### 5. Grade Answers (LLM-Judge)
+## ÖSYM soruları ve telif
 
-To run the LLM-Judge evaluation against the raw outputs file:
-```bash
-python3 -m src.evaluator results/raw_outputs/run_<timestamp>_gemini-1.5-flash_closed_book.json
+ÖSYM soruları ÖSYM'nin yazılı izni olmadan yayımlanamaz. Bu yüzden sınav soruları repoda
+**yoktur**; `data/private/` git dışındadır. Sınav track'i, soruları yerelde yazıya döküp
+`python -m legaluga_bench build-exams` ile üretilir. Repoda yalnız sayılar ve kaynak dosya
+özetleri bulunur: [data/exams_manifest.json](data/exams_manifest.json).
+
+## Dizin yapısı
+
 ```
-This automatically grades all multiple-choice questions (using exact-match regex) and calls the LLM-Judge (configured via `DEFAULT_LLM_JUDGE` in `.env`) to score open-ended questions using the strict rubrics. Graded outputs are saved to `results/scored_outputs/`.
-
-### 6. Serve the Leaderboard & Dashboard
-
-Run the Streamlit web dashboard:
-```bash
-streamlit run dashboard/app.py
+configs/systems.yaml        test edilen sistemler
+data/tasks/                 public görevler (statute, case_lookup, citation_check, research)
+data/gold/                  resmî kaynak örneklemleri ve altın veri taslakları
+data/private/               (git dışı) ÖSYM soruları, kaynak PDF'ler, önbellek
+docs/METODOLOJI.md          yöntem, tarafsızlık önlemleri, sınırlar
+legaluga_bench/agent/       ajan döngüsü ve ortak istemler
+legaluga_bench/systems/     MCP / web / kapalı kitap sağlayıcıları
+legaluga_bench/official/    bağımsız Bedesten istemcisi, altın veri üreticileri
+legaluga_bench/scoring/     künye ayrıştırma, track puanlaması, kör hakem, istatistik
+legaluga_bench/report/      lider tablosu
+tests/                      birim testleri (python -m pytest)
 ```
-This opens a local dashboard where you can:
-- Compare model performance across a visual Leaderboard.
-- Inspect the breakdown by legal area and task type.
-- Open the **Detaylı Müfettiş (Detailed Inspector)** to see side-by-side questions, golden answers, candidate answers, and judge justifications.
-- Use the **İnsan Değerlendirici Formu (Human Review Panel)** to toggle *Human Override*, score the criteria manually, and save the result. Overridden scores are computed using the **70% Human + 30% LLM-Judge** formula.

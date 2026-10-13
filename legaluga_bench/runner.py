@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from pathlib import Path
 
@@ -48,6 +49,12 @@ async def run_system(
     sem = asyncio.Semaphore(max(1, concurrency))
     async with make_provider(cfg, all_configs) as provider:
         tools = await provider.list_tools()
+        fp_dir = run_dir(run_name) / "systems"
+        fp_dir.mkdir(parents=True, exist_ok=True)
+        (fp_dir / f"{cfg.id}.json").write_text(
+            json.dumps({**provider.fingerprint(), "instructions": provider.instructions,
+                        "use_server_instructions": settings.use_server_instructions},
+                       ensure_ascii=False, indent=2), encoding="utf-8")
         log.info("%s: %d araç, %d görev", cfg.id, len(tools) + len(provider.server_tools()), len(pending))
 
         async def one(task: Task) -> None:

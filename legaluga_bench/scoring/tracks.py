@@ -20,6 +20,7 @@ from .citations import (
     norm_date,
     norm_law_no,
     statute_key,
+    strip_gk_prefix,
 )
 
 
@@ -34,6 +35,21 @@ class CitationVerifier(Protocol):
     async def verify_case(self, citation: dict[str, Any]) -> str: ...
 
     async def verify_statute(self, law_no: str, article: str) -> str: ...
+
+
+def grounding(run: RunRecord, cases: list[dict[str, Any]]) -> float | None:
+    """Cevaptaki karar künyelerinden, esas ve karar numarası ajanın araç çıktılarında geçenlerin oranı.
+
+    Araç kullanmayan sistemlerde (kapalı kitap) ve hiç künye verilmeyen cevaplarda None döner.
+    Yüksek oran, künyenin modelin belleğinden değil aracın döndürdüğü kaynaktan geldiğini gösterir.
+    """
+    seen = {n for tc in run.tool_calls for n in tc.numbers_seen}
+    keys = [case_key(c) for c in cases]
+    keys = [k for k in keys if k.esas and (k.karar or k.chamber == "BB")]
+    if not keys or not run.tool_calls:
+        return None
+    ok = sum(1 for k in keys if strip_gk_prefix(k.esas) in seen and (k.karar is None or k.karar in seen))
+    return ok / len(keys)
 
 
 def _record(task: Task, run: RunRecord, score: float, correct: bool | None, **details: Any) -> ScoreRecord:
@@ -124,7 +140,7 @@ def score_case_lookup(task: Task, run: RunRecord) -> ScoreRecord:
     if rank:
         date_ok = norm_date(decisions[rank - 1].get("date")) == norm_date(gold.get("date")) if gold.get("date") else None
     return _record(task, run, score, rank == 1, rank=rank, partial_number_match=partial,
-                   date_ok=date_ok, n_returned=len(decisions),
+                   date_ok=date_ok, n_returned=len(decisions), grounding=grounding(run, decisions),
                    predicted=[case_key(d).short() for d in decisions], gold=case_key(gold).short())
 
 
@@ -192,7 +208,8 @@ def collect_citations(run: RunRecord) -> tuple[list[dict[str, Any]], list[dict[s
 
 async def verify_citations(run: RunRecord, verifier: CitationVerifier | None) -> dict[str, Any]:
     cases, statutes = collect_citations(run)
-    out: dict[str, Any] = {"n_case_citations": len(cases), "n_statute_citations": len(statutes)}
+    out: dict[str, Any] = {"n_case_citations": len(cases), "n_statute_citations": len(statutes),
+                           "grounding": grounding(run, cases)}
     if verifier is None:
         return out
     case_results = [await verifier.verify_case(c) for c in cases]

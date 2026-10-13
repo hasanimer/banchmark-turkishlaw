@@ -69,6 +69,9 @@ class ToolProvider:
 
     config: SystemConfig
     tools: list[ToolSpec] = field(default_factory=list)
+    # Sunucunun MCP initialize yanıtındaki talimatları (varsa); MCP istemcileri bunları modele iletir.
+    instructions: str = ""
+    server_info: dict[str, Any] = field(default_factory=dict)
 
     @property
     def system_id(self) -> str:
@@ -96,6 +99,22 @@ class ToolProvider:
 
     async def __aexit__(self, *exc: object) -> None:
         await self.close()
+
+    def fingerprint(self) -> dict[str, Any]:
+        """Koşu anındaki araç yüzeyinin özeti: sunucu sürümü, araç adları ve şemaların özeti."""
+        import hashlib
+        import json
+
+        payload = json.dumps([t.model_dump() for t in self.tools], sort_keys=True, ensure_ascii=False)
+        return {
+            "system": self.system_id,
+            "server_info": self.server_info,
+            "n_tools": len(self.tools),
+            "tools": [t.name for t in self.tools],
+            "server_tools": [t.get("type") for t in self.server_tools()],
+            "tools_sha256": hashlib.sha256(payload.encode()).hexdigest(),
+            "instructions_sha256": hashlib.sha256(self.instructions.encode()).hexdigest() if self.instructions else None,
+        }
 
     def tool_allowed(self, name: str) -> bool:
         inc, exc = self.config.include_tools, self.config.exclude_tools

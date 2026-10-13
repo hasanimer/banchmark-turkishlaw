@@ -52,6 +52,18 @@ def build_report(run_name: str, tasks: dict[str, Task], labels: dict[str, str] |
         row["tool_error_rate"] = mean(
             [0.0 if c.ok else 1.0 for r in sys_runs for c in r.tool_calls]
         ) if any(r.tool_calls for r in sys_runs) else None
+        g_vals = []
+        fabricated = cited = 0
+        for tr in ("case_lookup", "research"):
+            for s in by_sys_track.get((sid, tr), {}).values():
+                g = s.details.get("grounding", s.details.get("citations", {}).get("grounding"))
+                if g is not None:
+                    g_vals.append(g)
+                c = s.details.get("citations") or {}
+                fabricated += c.get("n_fabricated") or 0
+                cited += (c.get("n_case_citations") or 0) + (c.get("n_statute_citations") or 0)
+        row["grounding"] = mean(g_vals) if g_vals else None
+        row["research_fabricated_per_citation"] = (fabricated / cited) if cited else None
         for tr in tracks:
             vals = [s.score for s in by_sys_track.get((sid, tr), {}).values()]
             if vals:
@@ -92,6 +104,16 @@ def build_report(run_name: str, tasks: dict[str, Task], labels: dict[str, str] |
                     agg[str(val)][sid].append(s.score)
         breakdowns[key] = {g: {sid: mean(v) for sid, v in per.items()} for g, per in sorted(agg.items())}
 
+    # Karar bulma: kaynak katmanına (mahkeme türü) göre kırılım
+    strata: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for (sid, tr), items in by_sys_track.items():
+        if tr == "case_lookup":
+            for tid, s in items.items():
+                st = tasks[tid].meta.get("stratum") if tid in tasks else None
+                if st:
+                    strata[str(st)][sid].append(s.score)
+    breakdowns["case_stratum"] = {g: {sid: mean(v) for sid, v in per.items()} for g, per in sorted(strata.items())}
+
     return {"run": run_name, "systems": systems, "tracks": tracks, "table": table,
             "pairwise": pairwise, "exam_breakdowns": breakdowns}
 
@@ -112,6 +134,12 @@ def render_markdown(rep: dict[str, Any]) -> str:
             f" | {_fmt(r.get('overall'))} | {_fmt(r['avg_tool_calls'], pct=False)} | {_fmt(r['avg_latency_s'], pct=False)} | {_fmt(r['error_rate'])} |"
         )
     lines += ["", "Puanlar 0-100 ölçeğinde; parantez içi %95 bootstrap güven aralığı.", ""]
+    lines += ["## Kaynağa dayanma ve uydurma", "",
+              "| Sistem | Dayanak oranı (künye araç çıktısında geçiyor) | Araştırmada uydurma atıf oranı |",
+              "|---|---|---|"]
+    for r in rows:
+        lines.append(f"| {r['label']} | {_fmt(r.get('grounding'))} | {_fmt(r.get('research_fabricated_per_citation'))} |")
+    lines.append("")
     if rep["pairwise"]:
         lines += ["## Eşleştirilmiş karşılaştırmalar", "",
                   "| Track | A | B | n | Ort. fark (A−B) | %95 GA | McNemar p |", "|---|---|---|---|---|---|---|"]
@@ -123,7 +151,7 @@ def render_markdown(rep: dict[str, Any]) -> str:
             )
         lines.append("")
     for key, title in (("tool_relevance", "Sınav: soru türüne göre"), ("subject", "Sınav: derse göre"),
-                       ("session", "Sınav: oturuma göre")):
+                       ("session", "Sınav: oturuma göre"), ("case_stratum", "Karar bulma: mahkemeye göre")):
         groups = rep["exam_breakdowns"].get(key) or {}
         if not groups:
             continue

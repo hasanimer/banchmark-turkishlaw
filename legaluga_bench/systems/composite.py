@@ -28,6 +28,8 @@ class CompositeProvider(ToolProvider):
             for m in reversed(opened):
                 await m.close()
             raise
+        self.instructions = "\n\n".join(m.instructions for m in self.members if m.instructions)
+        self.server_info = {m.system_id: m.server_info for m in self.members}
         self.tools = []
         for m in self.members:
             for t in await m.list_tools():

@@ -8,12 +8,20 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Any
 
 from .base import ToolProvider, ToolResult, ToolSpec, expand_env
+
+# stdio sunucuları MCP SDK'sında yalnız asgari ortamla başlar; ağ/sertifika ayarları
+# (kurumsal proxy, özel CA) olmadan dış kaynaklara erişemezler. Bunlar aynen aktarılır.
+PASSTHROUGH_ENV = (
+    "HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY", "ALL_PROXY", "https_proxy", "http_proxy", "no_proxy", "all_proxy",
+    "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE", "NODE_EXTRA_CA_CERTS",
+)
 
 
 def _content_to_text(result: Any) -> str:
@@ -55,10 +63,12 @@ class MCPToolProvider(ToolProvider):
 
                 if not cfg.command:
                     raise ValueError(f"{cfg.id}: mcp_stdio için 'command' gerekli")
+                env = {k: os.environ[k] for k in PASSTHROUGH_ENV if os.environ.get(k)}
+                env.update({k: expand_env(v) for k, v in cfg.env.items()})
                 params = StdioServerParameters(
                     command=expand_env(cfg.command),
                     args=[expand_env(a) for a in cfg.args],
-                    env={k: expand_env(v) for k, v in cfg.env.items()} or None,
+                    env=env or None,
                 )
                 read, write = await self._stack.enter_async_context(stdio_client(params))
             elif cfg.kind == "mcp_http":
@@ -79,7 +89,11 @@ class MCPToolProvider(ToolProvider):
                 raise ValueError(f"{cfg.id}: MCPToolProvider '{cfg.kind}' türünü desteklemez")
 
             self._session = await self._stack.enter_async_context(ClientSession(read, write))
-            await self._session.initialize()
+            init = await self._session.initialize()
+            self.instructions = (getattr(init, "instructions", None) or "").strip()
+            info = getattr(init, "serverInfo", None)
+            if info is not None:
+                self.server_info = {"name": getattr(info, "name", None), "version": getattr(info, "version", None)}
             listed = await self._session.list_tools()
             self._all_tools = [
                 ToolSpec(name=t.name, description=t.description or "", input_schema=t.inputSchema or {})

@@ -49,8 +49,19 @@ Son JSON bloğu:
 }
 
 
-def render_system_prompt(today: str) -> str:
-    return SYSTEM_PROMPT.format(today=today)
+SERVER_INSTRUCTIONS_BLOCK = """
+
+Araç sunucusunun kendi talimatları (sunucu tarafından sağlanmıştır; MCP istemcilerinin yaptığı gibi aynen iletilir):
+<sunucu_talimatlari>
+{instructions}
+</sunucu_talimatlari>"""
+
+
+def render_system_prompt(today: str, server_instructions: str = "") -> str:
+    prompt = SYSTEM_PROMPT.format(today=today)
+    if server_instructions.strip():
+        prompt += SERVER_INSTRUCTIONS_BLOCK.format(instructions=server_instructions.strip())
+    return prompt
 
 
 def render_task_prompt(task: Task) -> str:
