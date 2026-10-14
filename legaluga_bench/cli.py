@@ -71,9 +71,9 @@ def cmd_tasks(args: argparse.Namespace) -> int:
 
 
 def cmd_build_exams(args: argparse.Namespace) -> int:
-    from .exams.build import build
+    from .exams.build import AUDIT_DIR, build
 
-    manifest = build()
+    manifest = build(audit_dir=AUDIT_DIR)
     print(json.dumps({k: manifest[k] for k in ("n_tasks", "by_session", "rejected", "by_split")},
                      ensure_ascii=False, indent=2))
     if manifest["capture_conflicts"]:

@@ -93,3 +93,22 @@ def test_shuffled_pages_do_not_split_sections(tmp_path):
     build(raw, tasks_out, manifest_out)
     ids = {t["id"] for t in read_jsonl(tasks_out)}
     assert ids == {f"exam-iyos-2025-q{n:03d}" for n in range(1, 16)}
+
+
+def test_audit_rejects_doubtful_keys_and_stale_questions(tmp_path):
+    raw, audit = tmp_path / "raw", tmp_path / "audit"
+    raw.mkdir()
+    audit.mkdir()
+    write(raw / "hmgs_2025_1__p001-003.jsonl", [q("hmgs_2025_1", n) for n in (1, 2, 3)])
+    write(audit / "a.jsonl", [
+        {"id": "exam-hmgs-2025-1-q001", "provisions": ["6098 m.344"], "stale_risk": False, "key_check": "consistent"},
+        {"id": "exam-hmgs-2025-1-q002", "provisions": [], "stale_risk": False, "key_check": "uncertain"},
+        {"id": "exam-hmgs-2025-1-q003", "provisions": [], "stale_risk": True, "key_check": "consistent"},
+    ])
+    manifest = build(raw, tmp_path / "t.jsonl", tmp_path / "m.json", audit_dir=audit)
+    tasks = {t["id"]: t for t in read_jsonl(tmp_path / "t.jsonl")}
+    assert set(tasks) == {"exam-hmgs-2025-1-q001"}
+    assert tasks["exam-hmgs-2025-1-q001"]["meta"]["audit"]["provisions"] == ["6098 m.344"]
+    assert tasks["exam-hmgs-2025-1-q001"]["meta"]["stale_risk"] is False
+    assert manifest["rejected"] == {"anahtar_supheli": 1, "guncellik_riski": 1}
+    assert manifest["audit"]["n_audited"] == 3
