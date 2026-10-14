@@ -101,6 +101,17 @@ hukuk dışı GKGY soruları, cevap anahtarı görünmeyenler, şıkkı/gövdesi
 tarihindeki** mevzuata göre cevap vermesi istenir; çünkü cevap anahtarı o tarihteki hukuka
 göredir. Sınavdan sonra mevzuatı değişen sorular ayrıca işaretlenir ve raporda ayrı gösterilir.
 
+**Güncellik ve anahtar denetimi.** Güncel katmandaki (2024 ve sonrası) her soru, araştırma aracı
+kullanılmadan yalnız yerel resmî kanun metinleri (Bedesten, değişiklik ve iptal notlarıyla)
+üzerinden denetlenir: (a) dayanak hüküm hangisi; (b) sınav tarihinden sonra cevabı
+değiştirebilecek bir değişiklik, ek, mülga ya da AYM iptali var mı (`stale_risk`: evet / hayır /
+belirsiz); (c) sınav tarihindeki hukuka göre resmî anahtar doğru mu. Anahtarı tutarsız
+görünen sorularda kaynak sayfanın görüntüsüne yeniden bakılarak yazıya dökme hatası ayıklanır.
+Anahtarı şüpheli (`anahtar_supheli`) ya da sınavdan sonraki bir değişiklikle cevabı değişmiş
+olabilecek (`guncellik_riski`) sorular puanlamaya alınmaz. İlk denetimde 768 sorudan 766'sının
+anahtarı tutarlı bulundu, 2'si şüpheli, 2'si güncellik riski taşıyordu; 39 soruda dayanak kanun
+yerel sette olmadığından güncellik "belirsiz" kaldı ve raporda ayrı gösterilir.
+
 **Puan.** Doğru şık 1, aksi 0. Raporda ders, soru türü (`statute` = belirli bir hükmün
 lafzına/sayısına dayanan, `doctrine`, `case_law`, `calculation`, `mixed`) ve oturum kırılımları verilir.
 
@@ -108,6 +119,13 @@ lafzına/sayısına dayanan, `doctrine`, `case_law`, `calculation`, `mixed`) ve 
 verisinde bulunabilir. Bunun etkisi kapalı kitap baz çizgisiyle ölçülür. Ajan modelinin bilgi
 kesim tarihinden sonra yapılan oturumlar (ör. HMGS 2026 Eylül) bulaşmasız alt küme olarak
 ayrıca raporlanmalıdır.
+
+**Tavan etkisi.** Pilotta (20 güncel soru, yarısı ajan modelinin bilgi kesiminden sonraki HMGS
+2026 Eylül'den) hem kapalı kitap hem genel web araması bütün soruları doğru cevapladı. Güçlü
+bir ajan modeliyle bu track araçlar arasında ayrım yapmıyor; asıl ayrım mevzuat, karar bulma
+ve atıf denetimi track'lerinde ortaya çıkıyor. Sınav track'i bu yüzden genel puanda
+tutulur ama ayrıca (a) daha küçük ajan modelleriyle, (b) `statute` ve `calculation` türü
+sorularla sınırlı alt kümeyle raporlanması önerilir.
 
 **Telif.** ÖSYM soruları ÖSYM'nin yazılı izni olmadan yayımlanamaz. Bu yüzden soru metinleri
 repoda yer almaz (`data/private/` git dışındadır). Repoda yalnız sayılar ve kaynak dosya
