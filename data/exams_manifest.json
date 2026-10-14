@@ -1,6 +1,6 @@
 {
   "description": "ÖSYM sınav soruları görev seti özeti. Soru metinleri telif nedeniyle repoda yer almaz; data/private altında üretilir.",
-  "n_tasks": 1197,
+  "n_tasks": 1179,
   "by_session": {
     "hmgs-2024-eylul": {
       "kabul": 86,
@@ -70,51 +70,45 @@
     },
     "kpss-hukuk-2026": {
       "kabul": 40
-    },
-    "unknown-1": {
-      "red:cevap_anahtari_yok": 59,
-      "kabul": 18,
-      "red:sik_eksik": 3,
-      "red:eksik_parca": 1
     }
   },
   "by_subject": {
     "Medeni Hukuk": 129,
     "Borçlar Hukuku": 128,
     "Anayasa Hukuku": 109,
-    "Ceza Hukuku": 109,
+    "Ceza Hukuku": 103,
     "Medeni Usul Hukuku": 100,
     "Ticaret Hukuku": 98,
     "İdare Hukuku": 85,
-    "İcra ve İflas Hukuku": 78,
-    "Ceza Muhakemesi Hukuku": 77,
+    "İcra ve İflas Hukuku": 74,
+    "Ceza Muhakemesi Hukuku": 73,
     "İdari Yargılama Hukuku": 62,
     "Vergi Hukuku": 59,
     "İş Hukuku ve Sosyal Güvenlik Hukuku": 58,
     "Milletlerarası Hukuk": 21,
     "Milletlerarası Özel Hukuk": 21,
-    "Hukuk Felsefesi ve Sosyolojisi": 18,
     "Avukatlık Hukuku": 16,
-    "Türk Hukuk Tarihi": 16,
+    "Hukuk Felsefesi ve Sosyolojisi": 16,
+    "Türk Hukuk Tarihi": 14,
     "Avrupa İnsan Hakları Hukuku": 10,
     "Diğer Hukuk": 2,
     "Genel Kamu Hukuku": 1
   },
   "by_tool_relevance": {
-    "statute": 1012,
-    "doctrine": 95,
-    "mixed": 77,
+    "statute": 999,
+    "doctrine": 91,
+    "mixed": 76,
     "calculation": 13
   },
   "by_split": {
-    "test": 1022,
-    "dev": 175
+    "test": 1006,
+    "dev": 173
   },
   "rejected": {
-    "eksik_parca": 17,
-    "sik_eksik": 21,
+    "eksik_parca": 16,
+    "sik_eksik": 18,
     "hukuk_disi": 137,
-    "cevap_anahtari_yok": 183
+    "cevap_anahtari_yok": 124
   },
   "capture_conflicts": [],
   "sources": {
@@ -135,7 +129,6 @@
     "hakimlik_2023_ortak_alan": "59445afe800e605f320eb141672d580b7e0b2388070e4e01c34e0f748793aeee",
     "hakimlik_2024_adli_mezun": "e949b500389dc7a5dac3573589bfc801a3ba40b2de972852263669dc172dea6d",
     "hakimlik_2025_adli_yargi": "8284448f35446d9a402686a9067cacdab133478c7db60d98da929df671e40d53",
-    "hakimlik_2025_ortak_alan": "436128935d023a38219bcab1c9e909ff10d10a4db9f7b1213c825acb4d4a3f19",
-    "hmgs_unknown_1": "643f40e7cec22697d31d8a0fa80aa3feafb8175f6ed93ca9442ba24eb96bf6c6"
+    "hakimlik_2025_ortak_alan": "436128935d023a38219bcab1c9e909ff10d10a4db9f7b1213c825acb4d4a3f19"
   }
 }

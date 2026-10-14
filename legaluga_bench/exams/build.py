@@ -43,7 +43,7 @@ SESSIONS: dict[str, Session] = {
     "hmgs_eylul": Session("hmgs-2026-eylul", "HMGS", "HMGS 2026 Eylül", 2026, "Eylül 2026"),
     "hmgs_2026_eylul_b": Session("hmgs-2026-eylul", "HMGS", "HMGS 2026 Eylül", 2026, "Eylül 2026"),
     "kpss_hukuk_2026": Session("kpss-hukuk-2026", "KPSS", "KPSS A Grubu Hukuk 2026", 2026, "2026"),
-    "iyoss_2025": Session("iyos-2025", "ÖSYM", "İYÖS 2025", 2025, "2025"),
+    "iyoss_2025": Session("iyos-2025", "İYÖS", "İdari Yargı Ön Sınavı (İYÖS) 2025", 2025, "2025"),
     "hakimlik_2018_adli": Session("hsa-2018", "HSA", "Hâkim ve Savcı Adaylığı 2018", 2018, "2018"),
     "hakimlik_2019_adli_idari": Session("hsa-2019", "HSA", "Hâkim ve Savcı Adaylığı 2019", 2019, "2019"),
     "hakimlik_2020_gkgy_ortak_adli": Session("hsa-2020", "HSA", "Hâkim ve Savcı Adaylığı 2020", 2020, "2020"),
@@ -54,7 +54,8 @@ SESSIONS: dict[str, Session] = {
     "hakimlik_2024_adli_mezun": Session("hsa-2024-adli", "HSA", "Hâkim ve Savcı Adaylığı 2024 (adli)", 2024, "2024"),
     "hakimlik_2025_adli_yargi": Session("hsa-2025-adli", "HSA", "Hâkim ve Savcı Adaylığı 2025 (adli alan)", 2025, "2025"),
     "hakimlik_2025_ortak_alan": Session("hsa-2025-ortak", "HSA", "Hâkim ve Savcı Adaylığı 2025 (ortak alan)", 2025, "2025"),
-    "hmgs_unknown_1": Session("unknown-1", "?", "Bilinmeyen kaynak", 0, ""),
+    # hmgs_unknown_1: ÖSYM ekranı değil, cevapları derleyicinin elle yazdığı 100 soruluk bir kolaj;
+    # oturumu doğrulanamadığı için bilinçli olarak set dışında bırakılmıştır.
 }
 
 EXAM_NOTE = (
