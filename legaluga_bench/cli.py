@@ -281,6 +281,15 @@ def cmd_official(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_assemble(args: argparse.Namespace) -> int:
+    """Mevzuat/araştırma taslaklarını resmî kaynakla denetleyip data/tasks altına yazar."""
+    from .official.assemble import assemble
+
+    summary = asyncio.run(assemble(args.track))
+    print(json.dumps(summary, ensure_ascii=False, indent=1))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     from dotenv import load_dotenv
 
@@ -379,6 +388,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--karar")
     s.add_argument("--id", help="Bedesten documentId (doc)")
     s.set_defaults(fn=cmd_official)
+
+    s = sub.add_parser("assemble", help="mevzuat/araştırma taslaklarını resmî kaynakla denetleyip görev dosyası yaz")
+    s.add_argument("track", choices=["statute", "research"])
+    s.set_defaults(fn=cmd_assemble)
 
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
