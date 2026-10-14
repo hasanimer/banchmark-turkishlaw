@@ -1,0 +1,7 @@
+{"id": "statute-ozel-01", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-ozel-02", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-ozel-03", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-ozel-04", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-ozel-05", "decision": "fix", "problems": ["accept 'bir yıl' ile yalnız 'cayma süre'/'on dört'/'14' kelimesinin herhangi bir yerde geçmesini arıyordu; bir yıllık sürenin başlangıcını yanlış veren cevaplar (ör. 'cayma süresiyle bağlı değildir; sözleşme/teslim tarihinden itibaren bir yıl') doğru sayılabiliyordu"], "changes": ["accept[0], 'bir yıl' ile birlikte cayma süresinin / on dört günlük sürenin bitimini (bit/sona/dol) arayacak şekilde daraltıldı", "accept[1] eklendi: toplam süreyi '1 yıl 14 gün' biçiminde veren doğru cevaplar için"]}
+{"id": "statute-ozel-06", "decision": "fix", "problems": ["accept'teki 'durdur' kökü 'durdurmaz' / 'durdurmayacaktır' gibi yanlış (olumsuz) cevaplarla da eşleşiyordu"], "changes": ["'durdur' olumsuz eklerle (maz/mayacak/mamak/madığ) devam etmeyecek şekilde sınırlandı; 'durur' kelime sınırına bağlandı"]}
+{"id": "statute-ozel-07", "decision": "fix", "problems": ["soru hem tarihi hem sayıyı istiyordu ama accept yalnız 7589'u arıyordu; tarihi yanlış veren cevap tam puan alabiliyordu"], "changes": ["accept hem 7589 sayısını hem 16/7/2026 (16.07.2026, 16 Temmuz 2026) tarihini isteyecek şekilde genişletildi"]}
