@@ -1,0 +1,7 @@
+{"id": "statute-tbk-01", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-tbk-02", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-tbk-03", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-tbk-04", "decision": "keep", "problems": [], "changes": []}
+{"id": "statute-tbk-05", "decision": "fix", "problems": ["accept[0] ('12 aylık ortalama') endeks türünü aramıyordu; eski metindeki ÜFE'ye dayanan yanlış cevap ('üretici fiyat endeksindeki 12 aylık ortalama') kabul edilebilirdi"], "changes": ["accept[0] TÜFE/tüketici fiyat ifadesini aynı cümlede arayacak şekilde daraltıldı"]}
+{"id": "statute-tbk-06", "decision": "fix", "problems": ["accept yalnız 'bir ay' arıyordu; süre başlangıcını yanlış veren yaygın cevaplar (ör. 'ikinci ihtardan itibaren bir ay') da doğru sayılıyordu"], "changes": ["accept, 'bir ay' ile birlikte kira yılının bitimini (bitim/sonu/dolması) aynı cümlede arayacak şekilde daraltıldı"]}
+{"id": "statute-tbk-07", "decision": "fix", "problems": ["soru 'hangi tarihte' diye soruyordu ve iki doğru okuma vardı: değişiklik notundaki 28/3/2013 değiştiren kanunun kabul tarihidir, yayım/yürürlük tarihi bundan farklı olabilir (resmî madde metni yalnız kabul tarihini veriyor); ayrıca accept tarihi hiç denetlemiyordu"], "changes": ["soru, kanun sayısı ve değişiklik notundaki kabul tarihini isteyecek biçimde netleştirildi", "accept hem 6455'i hem 28.3.2013 tarihini isteyen tek ifadeye çevrildi", "reference_answer 'kabul tarihli' ifadesiyle güncellendi"]}
