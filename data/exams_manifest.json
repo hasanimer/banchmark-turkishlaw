@@ -1,0 +1,134 @@
+{
+  "description": "ÖSYM sınav soruları görev seti özeti. Soru metinleri telif nedeniyle repoda yer almaz; data/private altında üretilir.",
+  "n_tasks": 1179,
+  "by_session": {
+    "hmgs-2024-eylul": {
+      "kabul": 86,
+      "red:eksik_parca": 12,
+      "red:sik_eksik": 2
+    },
+    "hmgs-2025-1": {
+      "kabul": 120
+    },
+    "hmgs-2025-2": {
+      "kabul": 120
+    },
+    "hmgs-2026-eylul": {
+      "kabul": 120
+    },
+    "hmgs-2026-nisan": {
+      "kabul": 119,
+      "red:eksik_parca": 1
+    },
+    "hsa-2018": {
+      "kabul": 85,
+      "red:sik_eksik": 1
+    },
+    "hsa-2019": {
+      "red:hukuk_disi": 30,
+      "kabul": 104,
+      "red:sik_eksik": 1
+    },
+    "hsa-2020": {
+      "red:hukuk_disi": 30,
+      "red:cevap_anahtari_yok": 47,
+      "kabul": 23
+    },
+    "hsa-2021": {
+      "red:hukuk_disi": 20,
+      "kabul": 60,
+      "red:sik_eksik": 3,
+      "red:eksik_parca": 1
+    },
+    "hsa-2022": {
+      "red:hukuk_disi": 24,
+      "red:cevap_anahtari_yok": 76
+    },
+    "hsa-2023-adli": {
+      "kabul": 35
+    },
+    "hsa-2023-ortak": {
+      "kabul": 34,
+      "red:eksik_parca": 1
+    },
+    "hsa-2024-adli": {
+      "red:hukuk_disi": 24,
+      "kabul": 76
+    },
+    "hsa-2025-adli": {
+      "kabul": 35
+    },
+    "hsa-2025-ortak": {
+      "kabul": 35
+    },
+    "iyos-2025": {
+      "kabul": 87,
+      "red:eksik_parca": 1,
+      "red:sik_eksik": 11,
+      "red:cevap_anahtari_yok": 1,
+      "red:hukuk_disi": 9
+    },
+    "kpss-hukuk-2026": {
+      "kabul": 40
+    }
+  },
+  "by_subject": {
+    "Medeni Hukuk": 129,
+    "Borçlar Hukuku": 128,
+    "Anayasa Hukuku": 109,
+    "Ceza Hukuku": 103,
+    "Medeni Usul Hukuku": 100,
+    "Ticaret Hukuku": 98,
+    "İdare Hukuku": 85,
+    "İcra ve İflas Hukuku": 74,
+    "Ceza Muhakemesi Hukuku": 73,
+    "İdari Yargılama Hukuku": 62,
+    "Vergi Hukuku": 59,
+    "İş Hukuku ve Sosyal Güvenlik Hukuku": 58,
+    "Milletlerarası Hukuk": 21,
+    "Milletlerarası Özel Hukuk": 21,
+    "Avukatlık Hukuku": 16,
+    "Hukuk Felsefesi ve Sosyolojisi": 16,
+    "Türk Hukuk Tarihi": 14,
+    "Avrupa İnsan Hakları Hukuku": 10,
+    "Diğer Hukuk": 2,
+    "Genel Kamu Hukuku": 1
+  },
+  "by_tool_relevance": {
+    "statute": 999,
+    "doctrine": 91,
+    "mixed": 76,
+    "calculation": 13
+  },
+  "by_split": {
+    "test": 1006,
+    "dev": 173
+  },
+  "rejected": {
+    "eksik_parca": 16,
+    "sik_eksik": 18,
+    "hukuk_disi": 137,
+    "cevap_anahtari_yok": 124
+  },
+  "capture_conflicts": [],
+  "sources": {
+    "hmgs_2024_eylul": "3bb6b5a21e6b454f1172cdbcb6f9becba3ffa672dd867178d7661a56936468bf",
+    "hmgs_2025_1": "9e2b8c9e86d0b8f9bd3f7d26137dcd0880cc4e8827be6154b9aa2b30142a019d",
+    "hmgs_2025_2": "f362acc86f00f973e047b3ca6187c5e8c17bed003588eac352dec65c20bc2568",
+    "hmgs_2026_nisan": "14750fb1604bb824c25d92eca96e50bec24beae537eea4469c9188f1798ac1a4",
+    "hmgs_eylul": "0961d0e9828ab85dffbc10bbae23299ab63bc74916c36baefddfbdc9bdf7abdc",
+    "hmgs_2026_eylul_b": "df29b2dc96c4e61bf18e4336fa06ef16f87f39f0562dc9fc35beadf1f0924e1c",
+    "kpss_hukuk_2026": "73577233ff5776de09a33efcc32fe86636b84e25ae66b7e4fd3d04e13aab8bd9",
+    "iyoss_2025": "0b3c4e1baa96c74c4923b5991f2e80df295ed3a25906f91cc67e5284b489de69",
+    "hakimlik_2018_adli": "350787bf70a60dd416c2d051abe70022b5f34158c30c0331b3a1e0938ba596c8",
+    "hakimlik_2019_adli_idari": "a5bf4db23a24a989d2761db0dce845a8196e18493a538efec4c2938743e3bc54",
+    "hakimlik_2020_gkgy_ortak_adli": "3f17687c41c82e6229245ec9913da3c1c275a5831e7f251b27de511604a721f0",
+    "hakimlik_2021": "b3bfebc85d3209b965812c8e297fbdb42375a962210acc5a0516886aceefc438",
+    "hakimlik_2022": "79e29aa3a126aa973c0b1b66faf525490e25bf16dd774a1f453713b1f4eb3bba",
+    "hakimlik_2023_adli_alan": "8dadeee13953d31d764aa016108fed3e5561dc3201f557bb32b98366a0a0e494",
+    "hakimlik_2023_ortak_alan": "59445afe800e605f320eb141672d580b7e0b2388070e4e01c34e0f748793aeee",
+    "hakimlik_2024_adli_mezun": "e949b500389dc7a5dac3573589bfc801a3ba40b2de972852263669dc172dea6d",
+    "hakimlik_2025_adli_yargi": "8284448f35446d9a402686a9067cacdab133478c7db60d98da929df671e40d53",
+    "hakimlik_2025_ortak_alan": "436128935d023a38219bcab1c9e909ff10d10a4db9f7b1213c825acb4d4a3f19"
+  }
+}

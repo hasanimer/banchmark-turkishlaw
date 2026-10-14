@@ -1,0 +1,69 @@
+# Test edilen sistemler. Her sistem, aynı ajana (aynı model, istem, bütçe) verilen bir araç kümesidir.
+# Gizli anahtarlar yalnız ortam değişkenlerinden okunur (.env); bu dosyaya yazılmaz.
+#
+# kind:
+#   mcp_http              Uzak MCP sunucusu (Streamable HTTP)
+#   mcp_stdio             Yerelde süreç olarak çalışan MCP sunucusu
+#   composite             Birden çok sistemin araçlarını tek sistem olarak sunar (members)
+#   anthropic_web_search  Genel web araması baz çizgisi (Anthropic sunucu tarafı aracı)
+#   none                  Kapalı kitap (araç yok)
+#
+# exclude_tools: araştırma dışı (belge üretimi, imar hesabı vb.) araçlar bütün sistemlerde aynı ilkeyle çıkarılır.
+# auth: oauth  -> MCP OAuth 2.1; ilk kullanımda `python -m legaluga_bench login --system <id>` ile bir kez
+#                tarayıcıdan giriş yapılır, belirteçler ~/.config/legaluga-bench/oauth/ altında saklanır.
+# Statik anahtar veren sunucular için: headers: {Authorization: "Bearer ${ORTAM_DEGISKENI}"}
+
+systems:
+  legaluga:
+    label: "Legaluga MCP"
+    kind: mcp_http
+    url: "${LEGALUGA_MCP_URL:-https://mcp.legaluga.com/mcp}"
+    # MCP OAuth 2.1 (Supabase; DCR + PKCE). İlk kez: python -m legaluga_bench login --system legaluga
+    auth: oauth
+    exclude_tools: ["udf_*", "dilekce_*", "imar_*"]
+    # Legaluga Core'un semantik araması eşzamanlı çağrıları sınırlıyor.
+    max_concurrency: 1
+
+  yargi_pro:
+    label: "Yargı PRO"
+    kind: mcp_http
+    url: "${YARGI_PRO_MCP_URL:-https://app.yargipro.com/mcp}"
+    auth: oauth
+
+  acik_kaynak:
+    label: "Yargı MCP + Mevzuat MCP (açık kaynak)"
+    kind: composite
+    members: [yargi_mcp, mevzuat_mcp]
+
+  yargi_mcp:
+    label: "Yargı MCP (açık kaynak, yerel)"
+    kind: mcp_stdio
+    # pip install "yargi-mcp==0.2.2" "fastmcp>=3.4.4,<4" "mcp>=1.24,<2"  (ayrı bir sanal ortamda)
+    command: "${YARGI_MCP_COMMAND:-yargi-mcp}"
+    exclude_tools: ["check_government_servers_health"]
+    env:
+      BEDESTEN_RATE_MAX_WAIT_S: "60"
+      EMSAL_RATE_MAX_WAIT_S: "60"
+    max_concurrency: 1
+
+  mevzuat_mcp:
+    label: "Mevzuat MCP (açık kaynak, barındırılan)"
+    kind: mcp_http
+    url: "${MEVZUAT_MCP_URL:-https://mevzuatmcp.fastmcp.app/mcp}"
+    max_concurrency: 2
+
+  legal_data_hunter:
+    label: "Legal Data Hunter"
+    kind: mcp_http
+    url: "${LDH_MCP_URL:-https://legaldatahunter.com/mcp}"
+    auth: oauth
+    exclude_tools: ["report_source_issue"]
+
+  web_search:
+    label: "Genel web araması (baz çizgisi)"
+    kind: anthropic_web_search
+    max_uses: 10
+
+  closed_book:
+    label: "Kapalı kitap (araçsız)"
+    kind: none
