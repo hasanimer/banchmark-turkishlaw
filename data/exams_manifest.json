@@ -1,0 +1,124 @@
+{
+  "description": "ÖSYM sınav soruları görev seti özeti. Soru metinleri telif nedeniyle repoda yer almaz; data/private altında üretilir.",
+  "n_tasks": 700,
+  "by_session": {
+    "hmgs-2024-eylul": {
+      "kabul": 86,
+      "red:eksik_parca": 12,
+      "red:sik_eksik": 2
+    },
+    "hmgs-2025-1": {
+      "kabul": 120
+    },
+    "hmgs-2025-2": {
+      "kabul": 120
+    },
+    "hmgs-2026-eylul": {
+      "kabul": 92,
+      "red:eksik_parca": 3,
+      "red:sik_eksik": 25
+    },
+    "hmgs-2026-nisan": {
+      "kabul": 20
+    },
+    "hsa-2018": {
+      "kabul": 35
+    },
+    "hsa-2019": {
+      "red:hukuk_disi": 10,
+      "kabul": 24,
+      "red:sekil": 1
+    },
+    "hsa-2020": {
+      "red:hukuk_disi": 11,
+      "kabul": 14,
+      "red:cevap_anahtari_yok": 10
+    },
+    "hsa-2021": {
+      "red:hukuk_disi": 8,
+      "kabul": 26,
+      "red:sekil": 1
+    },
+    "hsa-2022": {
+      "red:cevap_anahtari_yok": 25,
+      "red:hukuk_disi": 10
+    },
+    "hsa-2023-adli": {
+      "kabul": 35
+    },
+    "hsa-2023-ortak": {
+      "kabul": 34,
+      "red:eksik_parca": 1
+    },
+    "hsa-2024-adli": {
+      "kabul": 24,
+      "red:hukuk_disi": 11
+    },
+    "hsa-2025-adli": {
+      "kabul": 35
+    },
+    "hsa-2025-ortak": {
+      "kabul": 35
+    }
+  },
+  "by_subject": {
+    "Medeni Hukuk": 81,
+    "Borçlar Hukuku": 68,
+    "Ticaret Hukuku": 63,
+    "Medeni Usul Hukuku": 59,
+    "Ceza Hukuku": 59,
+    "Anayasa Hukuku": 58,
+    "Ceza Muhakemesi Hukuku": 47,
+    "İcra ve İflas Hukuku": 46,
+    "İdare Hukuku": 43,
+    "İş Hukuku ve Sosyal Güvenlik Hukuku": 43,
+    "İdari Yargılama Hukuku": 39,
+    "Vergi Hukuku": 30,
+    "Milletlerarası Hukuk": 13,
+    "Milletlerarası Özel Hukuk": 13,
+    "Avukatlık Hukuku": 12,
+    "Türk Hukuk Tarihi": 10,
+    "Hukuk Felsefesi ve Sosyolojisi": 9,
+    "Avrupa İnsan Hakları Hukuku": 6,
+    "Diğer Hukuk": 1
+  },
+  "by_tool_relevance": {
+    "statute": 592,
+    "doctrine": 52,
+    "mixed": 46,
+    "calculation": 10
+  },
+  "by_split": {
+    "test": 600,
+    "dev": 100
+  },
+  "rejected": {
+    "eksik_parca": 16,
+    "sik_eksik": 27,
+    "hukuk_disi": 50,
+    "sekil": 2,
+    "cevap_anahtari_yok": 35
+  },
+  "capture_conflicts": [],
+  "sources": {
+    "hmgs_2024_eylul": "3bb6b5a21e6b454f1172cdbcb6f9becba3ffa672dd867178d7661a56936468bf",
+    "hmgs_2025_1": "9e2b8c9e86d0b8f9bd3f7d26137dcd0880cc4e8827be6154b9aa2b30142a019d",
+    "hmgs_2025_2": "f362acc86f00f973e047b3ca6187c5e8c17bed003588eac352dec65c20bc2568",
+    "hmgs_2026_nisan": "14750fb1604bb824c25d92eca96e50bec24beae537eea4469c9188f1798ac1a4",
+    "hmgs_eylul": "0961d0e9828ab85dffbc10bbae23299ab63bc74916c36baefddfbdc9bdf7abdc",
+    "hmgs_2026_eylul_b": "df29b2dc96c4e61bf18e4336fa06ef16f87f39f0562dc9fc35beadf1f0924e1c",
+    "kpss_hukuk_2026": "73577233ff5776de09a33efcc32fe86636b84e25ae66b7e4fd3d04e13aab8bd9",
+    "iyoss_2025": "0b3c4e1baa96c74c4923b5991f2e80df295ed3a25906f91cc67e5284b489de69",
+    "hakimlik_2018_adli": "350787bf70a60dd416c2d051abe70022b5f34158c30c0331b3a1e0938ba596c8",
+    "hakimlik_2019_adli_idari": "a5bf4db23a24a989d2761db0dce845a8196e18493a538efec4c2938743e3bc54",
+    "hakimlik_2020_gkgy_ortak_adli": "3f17687c41c82e6229245ec9913da3c1c275a5831e7f251b27de511604a721f0",
+    "hakimlik_2021": "b3bfebc85d3209b965812c8e297fbdb42375a962210acc5a0516886aceefc438",
+    "hakimlik_2022": "79e29aa3a126aa973c0b1b66faf525490e25bf16dd774a1f453713b1f4eb3bba",
+    "hakimlik_2023_adli_alan": "8dadeee13953d31d764aa016108fed3e5561dc3201f557bb32b98366a0a0e494",
+    "hakimlik_2023_ortak_alan": "59445afe800e605f320eb141672d580b7e0b2388070e4e01c34e0f748793aeee",
+    "hakimlik_2024_adli_mezun": "e949b500389dc7a5dac3573589bfc801a3ba40b2de972852263669dc172dea6d",
+    "hakimlik_2025_adli_yargi": "8284448f35446d9a402686a9067cacdab133478c7db60d98da929df671e40d53",
+    "hakimlik_2025_ortak_alan": "436128935d023a38219bcab1c9e909ff10d10a4db9f7b1213c825acb4d4a3f19",
+    "hmgs_unknown_1": "643f40e7cec22697d31d8a0fa80aa3feafb8175f6ed93ca9442ba24eb96bf6c6"
+  }
+}

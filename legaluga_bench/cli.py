@@ -35,6 +35,11 @@ def cmd_systems(args: argparse.Namespace) -> int:
     configs = load_system_configs()
     for sid, cfg in configs.items():
         status = "hazır"
+        if cfg.auth == "oauth":
+            from .systems.oauth import FileTokenStorage
+
+            if not FileTokenStorage(sid).path.exists():
+                status = f"giriş gerekli: python -m legaluga_bench login --system {sid}"
         try:
             for v in [cfg.command or "", cfg.url or "", *cfg.args, *cfg.env.values(), *cfg.headers.values()]:
                 expand_env(v)
@@ -157,6 +162,29 @@ def cmd_report(args: argparse.Namespace) -> int:
     md, js = write_report(args.run_name, tasks, labels)
     print(md.read_text(encoding="utf-8"))
     print(f"\nRapor: {md}\nJSON: {js}")
+    return 0
+
+
+def cmd_login(args: argparse.Namespace) -> int:
+    """OAuth kullanan bir sisteme tarayıcıdan bir kez giriş yapar ve belirteçleri saklar."""
+    from .systems import load_system_configs, make_provider
+    from .systems.mcp_provider import MCPToolProvider
+
+    configs = load_system_configs()
+    cfg = configs.get(args.system)
+    if cfg is None or cfg.auth != "oauth":
+        print(f"{args.system}: OAuth kullanan tanımlı bir sistem değil", file=sys.stderr)
+        return 2
+    provider = make_provider(cfg, configs)
+    assert isinstance(provider, MCPToolProvider)
+    provider.interactive_auth = True
+
+    async def go() -> None:
+        async with provider as p:
+            tools = await p.list_tools()
+            print(f"{cfg.id}: giriş başarılı, {len(tools)} araç")
+
+    asyncio.run(go())
     return 0
 
 
@@ -308,6 +336,10 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("report", help="rapor üret")
     s.add_argument("--run-name", required=True)
     s.set_defaults(fn=cmd_report)
+
+    s = sub.add_parser("login", help="OAuth kullanan sisteme bir kez giriş yap")
+    s.add_argument("--system", required=True)
+    s.set_defaults(fn=cmd_login)
 
     s = sub.add_parser("render", help="görevin istemlerini harness'taki hâliyle yazdır")
     s.add_argument("--task-id", required=True)

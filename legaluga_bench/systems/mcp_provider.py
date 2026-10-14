@@ -46,6 +46,7 @@ def _content_to_text(result: Any) -> str:
 
 @dataclass
 class MCPToolProvider(ToolProvider):
+    interactive_auth: bool = False
     _stack: AsyncExitStack | None = None
     _session: Any = None
     _sem: asyncio.Semaphore | None = None
@@ -77,12 +78,19 @@ class MCPToolProvider(ToolProvider):
                 if not cfg.url:
                     raise ValueError(f"{cfg.id}: mcp_http için 'url' gerekli")
                 headers = {k: expand_env(v) for k, v in cfg.headers.items()}
+                url = expand_env(cfg.url)
+                auth = None
+                if cfg.auth == "oauth":
+                    from .oauth import make_oauth_provider
+
+                    auth = make_oauth_provider(cfg.id, url, cfg.oauth_scope, self.interactive_auth)
                 read, write, _ = await self._stack.enter_async_context(
                     streamablehttp_client(
-                        expand_env(cfg.url),
+                        url,
                         headers=headers or None,
                         timeout=30,
                         sse_read_timeout=cfg.call_timeout_s + 30,
+                        auth=auth,
                     )
                 )
             else:

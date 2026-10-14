@@ -9,15 +9,17 @@
 #   none                  Kapalı kitap (araç yok)
 #
 # exclude_tools: araştırma dışı (belge üretimi, imar hesabı vb.) araçlar bütün sistemlerde aynı ilkeyle çıkarılır.
-# Uzak sunucularda OAuth kullanılıyorsa, alınan erişim belirteci ilgili ortam değişkenine konur.
+# auth: oauth  -> MCP OAuth 2.1; ilk kullanımda `python -m legaluga_bench login --system <id>` ile bir kez
+#                tarayıcıdan giriş yapılır, belirteçler ~/.config/legaluga-bench/oauth/ altında saklanır.
+# Statik anahtar veren sunucular için: headers: {Authorization: "Bearer ${ORTAM_DEGISKENI}"}
 
 systems:
   legaluga:
     label: "Legaluga MCP"
     kind: mcp_http
     url: "${LEGALUGA_MCP_URL:-https://mcp.legaluga.com/mcp}"
-    headers:
-      Authorization: "Bearer ${LEGALUGA_MCP_TOKEN}"
+    # MCP OAuth 2.1 (Supabase; DCR + PKCE). İlk kez: python -m legaluga_bench login --system legaluga
+    auth: oauth
     exclude_tools: ["udf_*", "dilekce_*", "imar_*"]
     # Legaluga Core'un semantik araması eşzamanlı çağrıları sınırlıyor.
     max_concurrency: 1
@@ -26,8 +28,7 @@ systems:
     label: "Yargı PRO"
     kind: mcp_http
     url: "${YARGI_PRO_MCP_URL:-https://app.yargipro.com/mcp}"
-    headers:
-      Authorization: "Bearer ${YARGI_PRO_TOKEN}"
+    auth: oauth
 
   acik_kaynak:
     label: "Yargı MCP + Mevzuat MCP (açık kaynak)"
@@ -55,8 +56,7 @@ systems:
     label: "Legal Data Hunter"
     kind: mcp_http
     url: "${LDH_MCP_URL:-https://legaldatahunter.com/mcp}"
-    headers:
-      Authorization: "Bearer ${LDH_API_KEY}"
+    auth: oauth
     exclude_tools: ["report_source_issue"]
 
   web_search:

@@ -37,7 +37,14 @@ sunucu `composite` ile tek sistem yapılabilir).
 ```bash
 python -m venv .venv
 .venv/bin/pip install -e '.[dev]'
-cp .env.example .env    # LBENCH_AGENT_MODEL, LBENCH_JUDGE_MODEL, ANTHROPIC_API_KEY ve sistem belirteçleri
+cp .env.example .env    # LBENCH_AGENT_MODEL, LBENCH_JUDGE_MODEL ve ANTHROPIC_API_KEY
+```
+
+Legaluga, Yargı PRO ve Legal Data Hunter MCP OAuth kullanır; her biri için bir kez tarayıcıdan giriş yapın
+(belirteçler depo dışında, `~/.config/legaluga-bench/oauth/` altında saklanır ve otomatik yenilenir):
+
+```bash
+python -m legaluga_bench login --system legaluga
 ```
 
 Yargı MCP yerelde çalıştırılır; bağımlılık çakışmasını önlemek için ayrı bir sanal ortama kurun:

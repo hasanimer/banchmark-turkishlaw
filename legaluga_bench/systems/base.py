@@ -31,6 +31,9 @@ class SystemConfig(BaseModel):
     # mcp_http
     url: str | None = None
     headers: dict[str, str] = Field(default_factory=dict)
+    # "oauth": MCP OAuth 2.1 (DCR + PKCE); belirteç `login` komutuyla bir kez alınır.
+    auth: str | None = None
+    oauth_scope: str | None = None
     # ortak
     include_tools: list[str] = Field(default_factory=list)
     exclude_tools: list[str] = Field(default_factory=list)
