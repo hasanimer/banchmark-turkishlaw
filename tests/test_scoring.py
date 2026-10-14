@@ -102,3 +102,13 @@ def test_stats():
     mc = mcnemar_exact([True] * 10 + [False] * 2, [False] * 10 + [False] * 2)
     assert mc["only_a"] == 10 and mc["p_value"] < 0.01
     assert mcnemar_exact([True], [True])["p_value"] == 1.0
+
+
+def test_grounding_unknown_for_external_runs_without_tool_outputs():
+    from legaluga_bench.schema import RunRecord, ToolCallLog
+    from legaluga_bench.scoring.tracks import grounding
+
+    run = RunRecord(run_id="r", task_id="t", track="case_lookup", system_id="s", model="m", runner="external",
+                    started_at="", tool_calls=[ToolCallLog(name="WebSearch")])
+    cases = [{"court": "Yargıtay", "chamber": "3. HD", "esas": "2010/119", "karar": "2010/478"}]
+    assert grounding(run, cases) is None
