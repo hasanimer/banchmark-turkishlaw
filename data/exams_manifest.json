@@ -1,6 +1,6 @@
 {
   "description": "ÖSYM sınav soruları görev seti özeti. Soru metinleri telif nedeniyle repoda yer almaz; data/private altında üretilir.",
-  "n_tasks": 700,
+  "n_tasks": 1197,
   "by_session": {
     "hmgs-2024-eylul": {
       "kabul": 86,
@@ -14,34 +14,35 @@
       "kabul": 120
     },
     "hmgs-2026-eylul": {
-      "kabul": 92,
-      "red:eksik_parca": 3,
-      "red:sik_eksik": 25
+      "kabul": 120
     },
     "hmgs-2026-nisan": {
-      "kabul": 20
+      "kabul": 119,
+      "red:eksik_parca": 1
     },
     "hsa-2018": {
-      "kabul": 35
+      "kabul": 85,
+      "red:sik_eksik": 1
     },
     "hsa-2019": {
-      "red:hukuk_disi": 10,
-      "kabul": 24,
-      "red:sekil": 1
+      "red:hukuk_disi": 30,
+      "kabul": 104,
+      "red:sik_eksik": 1
     },
     "hsa-2020": {
-      "red:hukuk_disi": 11,
-      "kabul": 14,
-      "red:cevap_anahtari_yok": 10
+      "red:hukuk_disi": 30,
+      "red:cevap_anahtari_yok": 47,
+      "kabul": 23
     },
     "hsa-2021": {
-      "red:hukuk_disi": 8,
-      "kabul": 26,
-      "red:sekil": 1
+      "red:hukuk_disi": 20,
+      "kabul": 60,
+      "red:sik_eksik": 3,
+      "red:eksik_parca": 1
     },
     "hsa-2022": {
-      "red:cevap_anahtari_yok": 25,
-      "red:hukuk_disi": 10
+      "red:hukuk_disi": 24,
+      "red:cevap_anahtari_yok": 76
     },
     "hsa-2023-adli": {
       "kabul": 35
@@ -51,53 +52,69 @@
       "red:eksik_parca": 1
     },
     "hsa-2024-adli": {
-      "kabul": 24,
-      "red:hukuk_disi": 11
+      "red:hukuk_disi": 24,
+      "kabul": 76
     },
     "hsa-2025-adli": {
       "kabul": 35
     },
     "hsa-2025-ortak": {
       "kabul": 35
+    },
+    "iyos-2025": {
+      "kabul": 87,
+      "red:eksik_parca": 1,
+      "red:sik_eksik": 11,
+      "red:cevap_anahtari_yok": 1,
+      "red:hukuk_disi": 9
+    },
+    "kpss-hukuk-2026": {
+      "kabul": 40
+    },
+    "unknown-1": {
+      "red:cevap_anahtari_yok": 59,
+      "kabul": 18,
+      "red:sik_eksik": 3,
+      "red:eksik_parca": 1
     }
   },
   "by_subject": {
-    "Medeni Hukuk": 81,
-    "Borçlar Hukuku": 68,
-    "Ticaret Hukuku": 63,
-    "Medeni Usul Hukuku": 59,
-    "Ceza Hukuku": 59,
-    "Anayasa Hukuku": 58,
-    "Ceza Muhakemesi Hukuku": 47,
-    "İcra ve İflas Hukuku": 46,
-    "İdare Hukuku": 43,
-    "İş Hukuku ve Sosyal Güvenlik Hukuku": 43,
-    "İdari Yargılama Hukuku": 39,
-    "Vergi Hukuku": 30,
-    "Milletlerarası Hukuk": 13,
-    "Milletlerarası Özel Hukuk": 13,
-    "Avukatlık Hukuku": 12,
-    "Türk Hukuk Tarihi": 10,
-    "Hukuk Felsefesi ve Sosyolojisi": 9,
-    "Avrupa İnsan Hakları Hukuku": 6,
-    "Diğer Hukuk": 1
+    "Medeni Hukuk": 129,
+    "Borçlar Hukuku": 128,
+    "Anayasa Hukuku": 109,
+    "Ceza Hukuku": 109,
+    "Medeni Usul Hukuku": 100,
+    "Ticaret Hukuku": 98,
+    "İdare Hukuku": 85,
+    "İcra ve İflas Hukuku": 78,
+    "Ceza Muhakemesi Hukuku": 77,
+    "İdari Yargılama Hukuku": 62,
+    "Vergi Hukuku": 59,
+    "İş Hukuku ve Sosyal Güvenlik Hukuku": 58,
+    "Milletlerarası Hukuk": 21,
+    "Milletlerarası Özel Hukuk": 21,
+    "Hukuk Felsefesi ve Sosyolojisi": 18,
+    "Avukatlık Hukuku": 16,
+    "Türk Hukuk Tarihi": 16,
+    "Avrupa İnsan Hakları Hukuku": 10,
+    "Diğer Hukuk": 2,
+    "Genel Kamu Hukuku": 1
   },
   "by_tool_relevance": {
-    "statute": 592,
-    "doctrine": 52,
-    "mixed": 46,
-    "calculation": 10
+    "statute": 1012,
+    "doctrine": 95,
+    "mixed": 77,
+    "calculation": 13
   },
   "by_split": {
-    "test": 600,
-    "dev": 100
+    "test": 1022,
+    "dev": 175
   },
   "rejected": {
-    "eksik_parca": 16,
-    "sik_eksik": 27,
-    "hukuk_disi": 50,
-    "sekil": 2,
-    "cevap_anahtari_yok": 35
+    "eksik_parca": 17,
+    "sik_eksik": 21,
+    "hukuk_disi": 137,
+    "cevap_anahtari_yok": 183
   },
   "capture_conflicts": [],
   "sources": {

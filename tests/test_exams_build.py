@@ -49,5 +49,47 @@ def test_build_merges_partials_filters_and_compares_captures(tmp_path):
     assert "HMGS 2025/1" in merged["prompt"]
     assert tasks["exam-hmgs-2026-eylul-q001"]["meta"]["captures_agree"] == 2
     assert manifest["rejected"] == {"hukuk_disi": 1, "cevap_anahtari_yok": 1, "sekil": 1, "cekim_uyusmazligi": 1}
-    assert manifest["capture_conflicts"] == [{"session": "hmgs-2026-eylul", "q_no": 2, "answers": ["C", "E"]}]
+    assert manifest["capture_conflicts"] == [{"session": "hmgs-2026-eylul", "section": "", "q_no": 2,
+                                              "answers": ["C", "E"]}]
     assert "Soru 1 metni" not in manifest_out.read_text(encoding="utf-8")  # manifest soru metni içermez
+
+
+def test_restarting_numbering_becomes_sections(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    # Ortak alan 1-10 (s.1-10), idari yargı 1-9 (s.11-19; 9. soru iki parçaya bölünmüş), adli yargı 1-2.
+    rows = [q("hakimlik_2018_adli", n, pages=[n], exam_guess="2018 hakimlik ortak alan soruları") for n in range(1, 11)]
+    rows += [q("hakimlik_2018_adli", n, pages=[10 + n], exam_guess="İdari yargı soruları", answer="C")
+             for n in range(1, 9)]
+    rows.append(q("hakimlik_2018_adli", 9, pages=[19], exam_guess="İdari yargı soruları", partial=True, answer=None,
+                  options={"A": "a", "B": "b", "C": "", "D": "", "E": ""}))
+    write(raw / "hakimlik_2018_adli__p001-019.jsonl", rows)
+    write(raw / "hakimlik_2018_adli__p020-021.jsonl", [
+        q("hakimlik_2018_adli", 9, pages=[20], exam_guess="İdari yargı soruları", partial=True, answer="E",
+          options={"A": "", "B": "", "C": "c", "D": "d", "E": "e"}),
+        q("hakimlik_2018_adli", 1, pages=[20], exam_guess="Adli yargı", answer="D"),
+        q("hakimlik_2018_adli", 2, pages=[21], exam_guess="Adli yargı", answer="A"),
+    ])
+    tasks_out, manifest_out = tmp_path / "tasks.jsonl", tmp_path / "manifest.json"
+    build(raw, tasks_out, manifest_out)
+    tasks = {t["id"]: t for t in read_jsonl(tasks_out)}
+    assert set(tasks) == ({f"exam-hsa-2018-b1-q{n:03d}" for n in range(1, 11)}
+                          | {f"exam-hsa-2018-b2-q{n:03d}" for n in range(1, 10)}
+                          | {"exam-hsa-2018-b3-q001", "exam-hsa-2018-b3-q002"})
+    assert tasks["exam-hsa-2018-b2-q009"]["gold"]["answer"] == "E"
+    assert tasks["exam-hsa-2018-b2-q009"]["options"]["A"] == "a"
+    assert tasks["exam-hsa-2018-b3-q001"]["gold"]["answer"] == "D"
+    assert tasks["exam-hsa-2018-b3-q002"]["meta"]["section_name"] == "adli"
+    assert tasks["exam-hsa-2018-b2-q001"]["meta"]["section_name"] == "idari"
+    assert tasks["exam-hsa-2018-b1-q001"]["meta"]["section_name"] == "ortak"
+
+
+def test_shuffled_pages_do_not_split_sections(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    order = [3, 1, 2, 5, 4, 7, 6, 14, 9, 10, 11, 12, 13, 8, 15]
+    write(raw / "iyoss_2025__p001-015.jsonl", [q("iyoss_2025", n, pages=[i]) for i, n in enumerate(order, 1)])
+    tasks_out, manifest_out = tmp_path / "tasks.jsonl", tmp_path / "manifest.json"
+    build(raw, tasks_out, manifest_out)
+    ids = {t["id"] for t in read_jsonl(tasks_out)}
+    assert ids == {f"exam-iyos-2025-q{n:03d}" for n in range(1, 16)}

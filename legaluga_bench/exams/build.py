@@ -20,6 +20,7 @@ from typing import Any
 
 from ..io import DATA_DIR, PRIVATE_DIR, PRIVATE_TASKS_DIR, read_jsonl, write_jsonl
 from ..schema import OPTION_LETTERS, Task
+from ..scoring.citations import fold
 
 RAW_DIR = PRIVATE_DIR / "exams" / "raw"
 
@@ -94,6 +95,44 @@ def _merge_partials(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return best
 
 
+_SECTION_WORDS = (
+    ("gkgy", ("gkgy", "genel yetenek", "genel kultur")),
+    ("idari", ("idari yargi",)),
+    ("adli", ("adli yargi",)),
+    ("ortak", ("ortak alan",)),
+)
+
+
+def _assign_sections(rows: list[dict[str, Any]]) -> tuple[list[str], dict[str, str]]:
+    """Sayfa sırasındaki kayıtlara bölüm etiketi verir: tek bölümlü dosyada "", çok bölümlüde b1, b2, ...
+
+    Bölüm geçişi yalnız gerçek yeniden numaralanmada sayılır: numara 1-2'ye döner, bir önceki numara
+    en az 5'tir ve mevcut bölümde en az 5 soru vardır. Karışık sırayla çekilmiş ekran görüntüleri
+    (ör. 14'ten sonra 9) ve bir önceki parçanın devamı olan kayıtlar bölüm açmaz. Etiketler kararlı
+    kimlik için sıra numarasıdır; exam_guess'ten çıkarılan bölüm adı (ortak/idari/adli/gkgy) ayrıca döner.
+    """
+    idx, prev, recent, raw = 0, None, [], []
+    for r in rows:
+        q = int(r["q_no"])
+        continuation = bool(r.get("partial")) and q in recent[-3:]
+        if prev is not None and not continuation and q <= 2 and prev >= 5 and len(recent) >= 5:
+            idx += 1
+            recent = []
+        raw.append(idx)
+        if not continuation:
+            prev = q
+            recent.append(q)
+    if idx == 0:
+        return [""] * len(rows), {}
+    names: dict[str, str] = {}
+    for sec in range(idx + 1):
+        text = fold(" ".join(str(r.get("exam_guess") or "") for r, s in zip(rows, raw) if s == sec))
+        votes = {name: sum(text.count(w) for w in words) for name, words in _SECTION_WORDS}
+        best = max(votes, key=votes.get)
+        names[f"b{sec + 1}"] = best if votes[best] > 0 else ""
+    return [f"b{s + 1}" for s in raw], names
+
+
 def _valid(q: dict[str, Any]) -> tuple[bool, str]:
     if not q.get("is_law", True):
         return False, "hukuk_disi"
@@ -121,34 +160,44 @@ def build(
     tasks_out: Path | None = None,
     manifest_out: Path | None = None,
 ) -> dict[str, Any]:
-    by_stem_q: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    # Kaynak dosya başına kayıtlar, sayfa sırasıyla. Bazı derlemelerde (ör. 2018-2019 hâkimlik)
+    # soru numarası her bölümde (ortak alan, idari yargı, adli yargı) 1'den yeniden başlar; bölümler
+    # sayfa sırasında numaranın geriye düşmesinden ayırt edilir.
+    by_stem: dict[str, list[tuple[tuple[int, str, int], dict[str, Any]]]] = defaultdict(list)
     for path in sorted(raw_dir.glob("*.jsonl")):
-        for row in read_jsonl(path):
+        for i, row in enumerate(read_jsonl(path)):
             if row.get("q_no") is None:
                 continue
             stem = row.get("source_file") or path.name.split("__")[0]
-            by_stem_q[(stem, int(row["q_no"]))].append(row)
+            first_page = min(row.get("pages") or [0])
+            by_stem[stem].append(((first_page, path.name, i), row))
 
-    # kaynak -> soru no -> birleşik kayıt
-    merged: dict[str, dict[int, dict[str, Any]]] = defaultdict(dict)
-    for (stem, qno), rows in by_stem_q.items():
-        merged[stem][qno] = _merge_partials(rows)
+    by_stem_q: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
+    section_names: dict[tuple[str, str], str] = {}
+    for stem, items in by_stem.items():
+        items.sort(key=lambda x: x[0])
+        sections, names = _assign_sections([row for _, row in items])
+        for label, name in names.items():
+            section_names[(stem, label)] = name
+        for (_, row), label in zip(items, sections):
+            by_stem_q[(stem, label, int(row["q_no"]))].append(row)
 
-    # oturum -> soru no -> [(kaynak, kayıt)]
-    by_session: dict[str, dict[int, list[tuple[str, dict[str, Any]]]]] = defaultdict(lambda: defaultdict(list))
-    for stem, qs in merged.items():
+    # oturum -> (bölüm, soru no) -> [(kaynak, birleşik kayıt)]
+    by_session: dict[str, dict[tuple[str, int], list[tuple[str, dict[str, Any]]]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    for (stem, label, qno), rows in by_stem_q.items():
         sess = SESSIONS.get(stem)
         if sess is None:
             continue
-        for qno, q in qs.items():
-            by_session[sess.slug][qno].append((stem, q))
+        by_session[sess.slug][(label, qno)].append((stem, _merge_partials(rows)))
 
     tasks: list[Task] = []
     rejected: Counter[str] = Counter()
     capture_conflicts: list[dict[str, Any]] = []
     per_session: dict[str, Counter[str]] = defaultdict(Counter)
     for slug, qs in sorted(by_session.items()):
-        for qno, versions in sorted(qs.items()):
+        for (label, qno), versions in sorted(qs.items()):
             sess = SESSIONS[versions[0][0]]
             valid = [(s, q) for s, q in versions if _valid(q)[0]]
             if not valid:
@@ -158,12 +207,12 @@ def build(
                 continue
             answers = {q["answer"].upper() for _, q in valid}
             if len(answers) > 1:
-                capture_conflicts.append({"session": slug, "q_no": qno, "answers": sorted(answers)})
+                capture_conflicts.append({"session": slug, "section": label, "q_no": qno, "answers": sorted(answers)})
                 rejected["cekim_uyusmazligi"] += 1
                 per_session[slug]["red:cekim_uyusmazligi"] += 1
                 continue
             stem, q = valid[0]
-            task_id = f"exam-{slug}-q{qno:03d}"
+            task_id = f"exam-{slug}-q{qno:03d}" if not label else f"exam-{slug}-{label}-q{qno:03d}"
             note = EXAM_NOTE.format(label=sess.label, date=sess.date_hint) if sess.year else ""
             tasks.append(
                 Task(
@@ -181,6 +230,8 @@ def build(
                         "session_slug": slug,
                         "year": sess.year,
                         "q_no": qno,
+                        "section": label or None,
+                        "section_name": section_names.get((stem, label)) or None,
                         "subject": q.get("subject"),
                         "tool_relevance": q.get("tool_relevance"),
                         "basis_hint": q.get("basis_hint") or [],
