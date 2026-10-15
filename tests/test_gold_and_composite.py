@@ -71,3 +71,11 @@ async def test_composite_routes_and_prefixes_collisions():
     assert "a talimatı" in comp.instructions and "b talimatı" in comp.instructions
     fp = comp.fingerprint()
     assert fp["n_tools"] == 3 and len(fp["tools_sha256"]) == 64
+
+
+def test_outside_coverage_citations_are_not_called_fabricated():
+    from legaluga_bench.official.bedesten import outside_coverage
+
+    assert outside_coverage({"court": "Yargıtay", "chamber": "İBK", "esas": "1990/4", "karar": "1991/3"})
+    assert outside_coverage({"court": "Yargıtay", "chamber": "HGK", "esas": "2007/422", "karar": "2007/536"})
+    assert not outside_coverage({"court": "Yargıtay", "chamber": "3. HD", "esas": "2026/484", "karar": "2026/3681"})

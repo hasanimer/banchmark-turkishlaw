@@ -195,11 +195,18 @@ def collect_citations(run: RunRecord) -> tuple[list[dict[str, Any]], list[dict[s
             statutes.append(c)
         elif c.get("esas") or c.get("karar") or c.get("basvuru_no"):
             cases.append(c)
-    seen_cases = {case_key(c) for c in cases}
+    # Metinden çıkarılan künye, aynı esas/karar numarasıyla zaten toplanmışsa (çoğunlukla JSON'daki
+    # yapılandırılmış atfın metindeki tekrarı) atlanır; metin ayrıştırıcısının mahkeme/daire tahmini
+    # yapılandırılmış alandan daha az güvenilirdir.
+    def numbers(c: dict[str, Any]) -> tuple[str | None, str | None]:
+        k = case_key(c)
+        return (strip_gk_prefix(k.esas) if k.esas else None, k.karar)
+
+    seen_cases = {numbers(c) for c in cases}
     for c in extract_case_citations(run.final_text):
-        if case_key(c) not in seen_cases:
+        if numbers(c) not in seen_cases:
             cases.append(c)
-            seen_cases.add(case_key(c))
+            seen_cases.add(numbers(c))
     seen_st = {statute_key(c) for c in statutes}
     for c in extract_statute_citations(run.final_text):
         if statute_key(c) not in seen_st:

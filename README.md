@@ -9,7 +9,8 @@ verilen araç kümesidir (MCP sunucusu). Araçsız (kapalı kitap) ve genel web 
 
 Altın cevaplar yalnız **resmî kaynaklardan** gelir: ÖSYM cevap anahtarları, Adalet Bakanlığı
 Bedesten servisi (karar ve mevzuat) ve mevzuat.gov.tr. Ayrıntılar ve tarafsızlık önlemleri:
-[docs/METODOLOJI.md](docs/METODOLOJI.md).
+[docs/METODOLOJI.md](docs/METODOLOJI.md). İlk pilot koşunun sonuçları ve bulguları:
+[docs/PILOT.md](docs/PILOT.md).
 
 > **Çıkar çatışması beyanı:** Benchmark, test edilen sistemlerden biri olan Legaluga'nın ekibi
 > tarafından hazırlanmıştır. Bu yüzden altın veri hiçbir test edilen sistemden üretilmez, hakem
@@ -19,7 +20,7 @@ Bedesten servisi (karar ve mevzuat) ve mevzuat.gov.tr. Ayrıntılar ve tarafsız
 
 | Track | Ne ölçer | Altın veri | Puan |
 |---|---|---|---|
-| `exam` | Gerçek sınav soruları (HMGS, hâkim-savcı adaylığı, KPSS hukuk) | ÖSYM cevap anahtarı | Doğru şık |
+| `exam` | Gerçek sınav soruları (HMGS, hâkim-savcı adaylığı, KPSS hukuk, İYÖS) | ÖSYM cevap anahtarı | Doğru şık |
 | `statute` | Yürürlükteki mevzuatı bulma ve doğru aktarma | Bedesten mevzuat (resmî madde metni) | Cevap + madde + aktarım sadakati |
 | `case_lookup` | Anlatılan kararı bulma | Bedesten'den tohumlu rastgele örneklem | MRR@3 |
 | `citation_check` | Dilekçedeki uydurma/hatalı künyeleri yakalama | Bedesten'de doğrulanmış gerçek ve uydurma künyeler | Atıf başına doğru hüküm |
@@ -93,6 +94,7 @@ data/tasks/                 public görevler (statute, case_lookup, citation_che
 data/gold/                  resmî kaynak örneklemleri ve altın veri taslakları
 data/private/               (git dışı) ÖSYM soruları, kaynak PDF'ler, önbellek
 docs/METODOLOJI.md          yöntem, tarafsızlık önlemleri, sınırlar
+docs/PILOT.md               pilot koşu sonuçları ve bulguları
 legaluga_bench/agent/       ajan döngüsü ve ortak istemler
 legaluga_bench/systems/     MCP / web / kapalı kitap sağlayıcıları
 legaluga_bench/official/    bağımsız Bedesten istemcisi, altın veri üreticileri

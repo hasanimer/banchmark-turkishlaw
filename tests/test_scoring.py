@@ -112,3 +112,17 @@ def test_grounding_unknown_for_external_runs_without_tool_outputs():
                     started_at="", tool_calls=[ToolCallLog(name="WebSearch")])
     cases = [{"court": "Yargıtay", "chamber": "3. HD", "esas": "2010/119", "karar": "2010/478"}]
     assert grounding(run, cases) is None
+
+
+def test_text_citation_repeating_structured_one_is_not_double_counted():
+    from legaluga_bench.schema import RunRecord
+    from legaluga_bench.scoring.tracks import collect_citations
+
+    text = ("BAM'lar arasındaki görüş ayrılığını gideren 2025/1495 E., 2025/3048 K. sayılı karar...\n"
+            '```json\n{"answer": "x", "citations": [{"type": "karar", "court": "Yargıtay", '
+            '"chamber": "3. Hukuk Dairesi", "esas": "2025/1495", "karar": "2025/3048"}]}\n```')
+    from legaluga_bench.agent.parse import parse_final_json
+    run = RunRecord(run_id="r", task_id="t", track="research", system_id="s", model="m", started_at="",
+                    final_text=text, parsed=parse_final_json(text, "research"))
+    cases, _ = collect_citations(run)
+    assert len(cases) == 1 and cases[0]["court"] == "Yargıtay"

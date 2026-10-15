@@ -197,7 +197,11 @@ sadakati (madde metnindeki zorunlu ifadelerin ne kadarının aynen aktarıldığ
 
 - **Bedesten kapsamı.** Bedesten her kararı yayımlamaz. "Bulunamadı", kararın hiç var
   olmadığının kesin kanıtı değildir. Uydurma künyeler bu yüzden ya olmayan dairelerden ya da
-  bütün dairelerde bulunmadığı doğrulanmış numara değişikliklerinden üretilir.
+  bütün dairelerde bulunmadığı doğrulanmış numara değişikliklerinden üretilir. Açık araştırma
+  cevaplarındaki atıf denetiminde, Bedesten'in büyük ölçüde kapsamadığı kararlar (içtihadı
+  birleştirme kararları, Büyük Genel Kurul, 2010 öncesi kararlar, bölge adliye mahkemesi
+  kararları) bulunamadığında uydurma değil "denetlenemedi" sayılır. Aynı kural, değişiklik
+  kanunlarında ve madde ağacındaki numara boşluklarında bulunamayan maddelere de uygulanır.
 - **Kaynak eğilimi.** Karar bulma görevleri Bedesten'den örneklendiği için Bedesten'i kullanan
   araçlar kapsam avantajına sahip olabilir. Bu, kullanıcının erişebildiği resmî kaynağı
   yansıtır; ancak raporda kaynak türüne göre kırılım verilir.
