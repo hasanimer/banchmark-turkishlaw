@@ -24,7 +24,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from ..io import RESULTS_DIR
-from ..scoring.citations import case_key, norm_number, strip_gk_prefix
+from ..scoring.citations import case_key, fold, norm_number, strip_gk_prefix
 
 BASE_URL = "https://bedesten.adalet.gov.tr"
 HEADERS = {
@@ -265,6 +265,22 @@ class BedestenClient:
         return None  # PDF kararlar şimdilik metne çevrilmiyor
 
 
+# Bedesten'in emsal karar arşivi içtihadı birleştirme kararlarını (İBK/YİBK, BGK), eski yılların
+# kararlarını ve bölge adliye mahkemesi kararlarının önemli bir kısmını içermez. Bunlar
+# bulunamadığında uydurma sayılmaz, 'unknown' döner.
+UNCOVERED_CHAMBERS = {"IBK", "BGK"}
+UNCOVERED_COURTS = {"bam"}
+COVERAGE_START_YEAR = 2010
+
+
+def outside_coverage(citation: dict[str, Any]) -> bool:
+    key = case_key(citation)
+    if key.chamber in UNCOVERED_CHAMBERS or key.court in UNCOVERED_COURTS:
+        return True
+    years = [int(n.split("/")[0]) for n in (key.karar, key.esas) if n and n.split("/")[0].isdigit()]
+    return bool(years) and max(years) < COVERAGE_START_YEAR
+
+
 class BedestenVerifier:
     """CitationVerifier: karar atıflarını Bedesten'de, madde atıflarını mevzuat servisinde denetler."""
 
@@ -280,7 +296,7 @@ class BedestenVerifier:
         if hits is None:
             return "unknown"
         if not hits:
-            return "not_found"
+            return "unknown" if outside_coverage(citation) else "not_found"
         key = case_key(citation)
         if key.chamber is None:
             return "exists"
@@ -302,4 +318,11 @@ class BedestenVerifier:
             return "unknown"
         if not idx:
             return "unknown"
-        return "exists" if str(int(base)) in idx else "not_found"
+        if str(int(base)) in idx:
+            return "exists"
+        # Değişiklik kanunlarında başka kanunlara işlenmiş maddeler ağaçta yer almaz; numara dizisindeki
+        # bir boşluk da maddenin yokluğunu kanıtlamaz. Yalnız son maddeden büyük numara 'not_found'.
+        numbered = [int(k) for k in idx if k.isdigit()]
+        if "degisiklik" in fold(str(law.get("mevzuatAdi") or "")) or (numbered and int(base) <= max(numbered)):
+            return "unknown"
+        return "not_found"

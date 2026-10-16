@@ -40,13 +40,15 @@ class CitationVerifier(Protocol):
 def grounding(run: RunRecord, cases: list[dict[str, Any]]) -> float | None:
     """Cevaptaki karar künyelerinden, esas ve karar numarası ajanın araç çıktılarında geçenlerin oranı.
 
-    Araç kullanmayan sistemlerde (kapalı kitap) ve hiç künye verilmeyen cevaplarda None döner.
-    Yüksek oran, künyenin modelin belleğinden değil aracın döndürdüğü kaynaktan geldiğini gösterir.
+    Araç kullanmayan sistemlerde (kapalı kitap), hiç künye verilmeyen cevaplarda ve araç çıktısı
+    kaydedilmemiş harici koşularda (yalnız araç adları bilinir) None döner. Yüksek oran, künyenin modelin belleğinden değil aracın döndürdüğü kaynaktan geldiğini gösterir.
     """
     seen = {n for tc in run.tool_calls for n in tc.numbers_seen}
     keys = [case_key(c) for c in cases]
     keys = [k for k in keys if k.esas and (k.karar or k.chamber == "BB")]
     if not keys or not run.tool_calls:
+        return None
+    if run.runner == "external" and not seen and not any(tc.result_chars for tc in run.tool_calls):
         return None
     ok = sum(1 for k in keys if strip_gk_prefix(k.esas) in seen and (k.karar is None or k.karar in seen))
     return ok / len(keys)
@@ -193,11 +195,18 @@ def collect_citations(run: RunRecord) -> tuple[list[dict[str, Any]], list[dict[s
             statutes.append(c)
         elif c.get("esas") or c.get("karar") or c.get("basvuru_no"):
             cases.append(c)
-    seen_cases = {case_key(c) for c in cases}
+    # Metinden çıkarılan künye, aynı esas/karar numarasıyla zaten toplanmışsa (çoğunlukla JSON'daki
+    # yapılandırılmış atfın metindeki tekrarı) atlanır; metin ayrıştırıcısının mahkeme/daire tahmini
+    # yapılandırılmış alandan daha az güvenilirdir.
+    def numbers(c: dict[str, Any]) -> tuple[str | None, str | None]:
+        k = case_key(c)
+        return (strip_gk_prefix(k.esas) if k.esas else None, k.karar)
+
+    seen_cases = {numbers(c) for c in cases}
     for c in extract_case_citations(run.final_text):
-        if case_key(c) not in seen_cases:
+        if numbers(c) not in seen_cases:
             cases.append(c)
-            seen_cases.add(case_key(c))
+            seen_cases.add(numbers(c))
     seen_st = {statute_key(c) for c in statutes}
     for c in extract_statute_citations(run.final_text):
         if statute_key(c) not in seen_st:

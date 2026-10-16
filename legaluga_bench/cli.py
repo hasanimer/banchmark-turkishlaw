@@ -71,9 +71,9 @@ def cmd_tasks(args: argparse.Namespace) -> int:
 
 
 def cmd_build_exams(args: argparse.Namespace) -> int:
-    from .exams.build import build
+    from .exams.build import AUDIT_DIR, build
 
-    manifest = build()
+    manifest = build(audit_dir=AUDIT_DIR)
     print(json.dumps({k: manifest[k] for k in ("n_tasks", "by_session", "rejected", "by_split")},
                      ensure_ascii=False, indent=2))
     if manifest["capture_conflicts"]:
@@ -281,6 +281,15 @@ def cmd_official(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_assemble(args: argparse.Namespace) -> int:
+    """Mevzuat/araştırma taslaklarını resmî kaynakla denetleyip data/tasks altına yazar."""
+    from .official.assemble import assemble
+
+    summary = asyncio.run(assemble(args.track))
+    print(json.dumps(summary, ensure_ascii=False, indent=1))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     from dotenv import load_dotenv
 
@@ -379,6 +388,10 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--karar")
     s.add_argument("--id", help="Bedesten documentId (doc)")
     s.set_defaults(fn=cmd_official)
+
+    s = sub.add_parser("assemble", help="mevzuat/araştırma taslaklarını resmî kaynakla denetleyip görev dosyası yaz")
+    s.add_argument("track", choices=["statute", "research"])
+    s.set_defaults(fn=cmd_assemble)
 
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,

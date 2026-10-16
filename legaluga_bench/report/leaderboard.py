@@ -170,6 +170,12 @@ def write_report(run_name: str, tasks: dict[str, Task], labels: dict[str, str] |
     rep = build_report(run_name, tasks, labels)
     out_dir = RESULTS_DIR / run_name
     md, js = out_dir / "report.md", out_dir / "report.json"
-    md.write_text(render_markdown(rep), encoding="utf-8")
+    text = render_markdown(rep)
+    # Koşu koşulları (ör. bir sistemin bileşeni kapalıydı) elle yazılan notes.md'den rapora eklenir.
+    notes = out_dir / "notes.md"
+    if notes.exists():
+        rep["notes"] = notes.read_text(encoding="utf-8").strip()
+        text += "\n\n## Koşu notları\n\n" + rep["notes"] + "\n"
+    md.write_text(text, encoding="utf-8")
     js.write_text(json.dumps(rep, ensure_ascii=False, indent=2), encoding="utf-8")
     return md, js

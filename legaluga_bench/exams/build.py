@@ -23,6 +23,9 @@ from ..schema import OPTION_LETTERS, Task
 from ..scoring.citations import fold
 
 RAW_DIR = PRIVATE_DIR / "exams" / "raw"
+# Güncel katman soruları için bağımsız güncellik ve anahtar denetimi (yerel resmî kanun metinleriyle,
+# araştırma aracı kullanılmadan). Satır başına: id, provisions, stale_risk, key_check, ...
+AUDIT_DIR = PRIVATE_DIR / "exams" / "audit"
 
 
 @dataclass(frozen=True)
@@ -160,7 +163,9 @@ def build(
     raw_dir: Path = RAW_DIR,
     tasks_out: Path | None = None,
     manifest_out: Path | None = None,
+    audit_dir: Path | None = None,
 ) -> dict[str, Any]:
+    audits = _load_audits(audit_dir)
     # Kaynak dosya başına kayıtlar, sayfa sırasıyla. Bazı derlemelerde (ör. 2018-2019 hâkimlik)
     # soru numarası her bölümde (ortak alan, idari yargı, adli yargı) 1'den yeniden başlar; bölümler
     # sayfa sırasında numaranın geriye düşmesinden ayırt edilir.
@@ -214,6 +219,19 @@ def build(
                 continue
             stem, q = valid[0]
             task_id = f"exam-{slug}-q{qno:03d}" if not label else f"exam-{slug}-{label}-q{qno:03d}"
+            audit = audits.get(task_id)
+            if audit is not None:
+                # Anahtarı şüpheli ya da sınavdan sonraki bir değişiklikle cevabı değişmiş olabilecek
+                # sorular puanlamaya alınmaz.
+                reason = None
+                if audit.get("key_check") != "consistent":
+                    reason = "anahtar_supheli"
+                elif audit.get("stale_risk") is True:
+                    reason = "guncellik_riski"
+                if reason:
+                    rejected[reason] += 1
+                    per_session[slug][f"red:{reason}"] += 1
+                    continue
             note = EXAM_NOTE.format(label=sess.label, date=sess.date_hint) if sess.year else ""
             tasks.append(
                 Task(
@@ -239,6 +257,14 @@ def build(
                         "source_files": sorted({s for s, _ in valid}),
                         "captures_agree": len(valid) if len(valid) > 1 else None,
                         "transcription_notes": q.get("notes") or "",
+                        "audit": None if audit is None else {
+                            "provisions": audit.get("provisions") or [],
+                            "stale_risk": audit.get("stale_risk"),
+                            "key_check": audit.get("key_check"),
+                            "image_checked": bool(audit.get("image_checked")),
+                        },
+                        # Rapor kırılımı için: denetlenmemiş sorularda None.
+                        "stale_risk": None if audit is None else audit.get("stale_risk"),
                     },
                 )
             )
@@ -255,6 +281,11 @@ def build(
         "by_tool_relevance": dict(Counter(t.meta.get("tool_relevance") for t in tasks).most_common()),
         "by_split": dict(Counter(t.split for t in tasks)),
         "rejected": dict(rejected),
+        "audit": {
+            "n_audited": sum(1 for t in tasks if t.meta.get("audit")) + rejected["anahtar_supheli"]
+                         + rejected["guncellik_riski"],
+            "stale_risk": dict(Counter(str(t.meta["stale_risk"]) for t in tasks if t.meta.get("audit"))),
+        },
         "capture_conflicts": capture_conflicts,
         "sources": _source_hashes(),
     }
@@ -262,6 +293,16 @@ def build(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return manifest
+
+
+def _load_audits(audit_dir: Path | None) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    if audit_dir is None or not audit_dir.exists():
+        return out
+    for path in sorted(audit_dir.glob("*.jsonl")):
+        for row in read_jsonl(path):
+            out[row["id"]] = row
+    return out
 
 
 def _source_hashes() -> dict[str, str]:

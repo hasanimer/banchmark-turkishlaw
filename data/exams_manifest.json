@@ -1,6 +1,6 @@
 {
   "description": "ÖSYM sınav soruları görev seti özeti. Soru metinleri telif nedeniyle repoda yer almaz; data/private altında üretilir.",
-  "n_tasks": 1179,
+  "n_tasks": 1175,
   "by_session": {
     "hmgs-2024-eylul": {
       "kabul": 86,
@@ -11,14 +11,17 @@
       "kabul": 120
     },
     "hmgs-2025-2": {
-      "kabul": 120
+      "kabul": 118,
+      "red:guncellik_riski": 1,
+      "red:anahtar_supheli": 1
     },
     "hmgs-2026-eylul": {
       "kabul": 120
     },
     "hmgs-2026-nisan": {
-      "kabul": 119,
-      "red:eksik_parca": 1
+      "kabul": 118,
+      "red:eksik_parca": 1,
+      "red:guncellik_riski": 1
     },
     "hsa-2018": {
       "kabul": 85,
@@ -56,7 +59,8 @@
       "kabul": 76
     },
     "hsa-2025-adli": {
-      "kabul": 35
+      "kabul": 34,
+      "red:anahtar_supheli": 1
     },
     "hsa-2025-ortak": {
       "kabul": 35
@@ -73,15 +77,15 @@
     }
   },
   "by_subject": {
-    "Medeni Hukuk": 129,
+    "Medeni Hukuk": 128,
     "Borçlar Hukuku": 128,
     "Anayasa Hukuku": 109,
     "Ceza Hukuku": 103,
-    "Medeni Usul Hukuku": 100,
+    "Medeni Usul Hukuku": 99,
     "Ticaret Hukuku": 98,
     "İdare Hukuku": 85,
-    "İcra ve İflas Hukuku": 74,
-    "Ceza Muhakemesi Hukuku": 73,
+    "İcra ve İflas Hukuku": 73,
+    "Ceza Muhakemesi Hukuku": 72,
     "İdari Yargılama Hukuku": 62,
     "Vergi Hukuku": 59,
     "İş Hukuku ve Sosyal Güvenlik Hukuku": 58,
@@ -95,20 +99,29 @@
     "Genel Kamu Hukuku": 1
   },
   "by_tool_relevance": {
-    "statute": 999,
+    "statute": 996,
     "doctrine": 91,
-    "mixed": 76,
+    "mixed": 75,
     "calculation": 13
   },
   "by_split": {
-    "test": 1006,
+    "test": 1002,
     "dev": 173
   },
   "rejected": {
     "eksik_parca": 16,
     "sik_eksik": 18,
+    "guncellik_riski": 2,
+    "anahtar_supheli": 2,
     "hukuk_disi": 137,
     "cevap_anahtari_yok": 124
+  },
+  "audit": {
+    "n_audited": 768,
+    "stale_risk": {
+      "False": 725,
+      "unclear": 39
+    }
   },
   "capture_conflicts": [],
   "sources": {
