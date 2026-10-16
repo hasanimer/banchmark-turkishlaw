@@ -24,6 +24,17 @@ systems:
     # Legaluga Core'un semantik araması eşzamanlı çağrıları sınırlıyor.
     max_concurrency: 1
 
+  de_jure:
+    label: "De Jure MCP"
+    kind: mcp_http
+    url: "${DE_JURE_MCP_URL:-https://mcp.dejure.ai/mcp}"
+    # MCP OAuth (DCR + PKCE). İlk kez: python -m legaluga_bench login --system de_jure
+    auth: oauth
+    # start_* araçları hesabın ücretli kotasından iş başlatır (derin araştırma, dilekçe, sözleşme
+    # analizi); karşılaştırma yalnız arama/getirme araçlarıyla yapılır.
+    exclude_tools: ["start_*", "get_deep_research", "get_petition_draft", "get_contract_analysis",
+                    "search_my_work", "send_feedback", "ping"]
+
   yargi_pro:
     label: "Yargı PRO"
     kind: mcp_http
