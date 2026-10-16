@@ -28,7 +28,7 @@ Bedesten servisi (karar ve mevzuat) ve mevzuat.gov.tr. Ayrıntılar ve tarafsız
 
 ## Sistemler
 
-`configs/systems.yaml` içinde tanımlıdır: Legaluga MCP, Yargı PRO, Yargı MCP + Mevzuat MCP
+`configs/systems.yaml` içinde tanımlıdır: Legaluga MCP, De Jure MCP, Yargı PRO, Yargı MCP + Mevzuat MCP
 (açık kaynak), Legal Data Hunter, genel web araması ve kapalı kitap. MCP sunucusu olan her araç
 YAML'a bir giriş eklenerek karşılaştırmaya katılabilir (stdio ya da Streamable HTTP; birden çok
 sunucu `composite` ile tek sistem yapılabilir).
@@ -41,7 +41,7 @@ python -m venv .venv
 cp .env.example .env    # LBENCH_AGENT_MODEL, LBENCH_JUDGE_MODEL ve ANTHROPIC_API_KEY
 ```
 
-Legaluga, Yargı PRO ve Legal Data Hunter MCP OAuth kullanır; her biri için bir kez tarayıcıdan giriş yapın
+Legaluga, De Jure, Yargı PRO ve Legal Data Hunter MCP OAuth kullanır; her biri için bir kez tarayıcıdan giriş yapın
 (belirteçler depo dışında, `~/.config/legaluga-bench/oauth/` altında saklanır ve otomatik yenilenir):
 
 ```bash

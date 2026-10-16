@@ -41,6 +41,7 @@ Sistemler `configs/systems.yaml` dosyasında tanımlanır:
 | Kimlik | Sistem | Erişim |
 |---|---|---|
 | `legaluga` | Legaluga MCP | Uzak MCP (Streamable HTTP), OAuth belirteci |
+| `de_jure` | De Jure MCP (ticari) | Uzak MCP (Streamable HTTP), OAuth; yalnız arama/getirme araçları |
 | `yargi_pro` | Yargı PRO (ticari) | Uzak MCP, OAuth / kurumsal anahtar |
 | `acik_kaynak` | Yargı MCP + Mevzuat MCP (açık kaynak) | Yargı MCP yerel (stdio) + Mevzuat MCP barındırılan; tek sistem olarak |
 | `legal_data_hunter` | Legal Data Hunter | Uzak MCP, anahtarla |

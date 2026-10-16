@@ -1,4 +1,4 @@
-# Pilot koşu — 15 Ekim 2026
+# Pilot koşu — 15–16 Ekim 2026
 
 İlk uçtan uca koşu. Amaç sistemleri sıralamak değil, görev setinin ve puanlamanın ayırt edici olup
 olmadığını görmekti. Sayılar küçük örneklemden gelir ve güven aralıkları geniştir.
@@ -8,8 +8,10 @@ olmadığını görmekti. Sayılar küçük örneklemden gelir ve güven aralık
 - **Görevler:** test bölümünden sabit tohumla seçilen 45 görev: 20 sınav (10'u ajan modelinin bilgi
   kesiminden sonraki HMGS 2026 Eylül'den), 8 mevzuat, 8 karar bulma, 4 atıf denetimi (20 atıf),
   5 açık araştırma. Seçim betiği görev kimliklerini sabitler; aynı görevler bütün sistemlerde koşuldu.
-- **Sistemler:** Legaluga MCP, Yargı MCP + Mevzuat MCP (açık kaynak), genel web araması, kapalı kitap.
-  Yargı PRO (hesap yok) ve Legal Data Hunter (ücretsiz plan kotası doldu) koşulmadı.
+- **Sistemler:** Legaluga MCP, De Jure MCP, Yargı MCP + Mevzuat MCP (açık kaynak), genel web
+  araması, kapalı kitap. Yargı PRO (hesap yok) ve Legal Data Hunter (ücretsiz plan kotası doldu)
+  koşulmadı. De Jure 16 Ekim'de, "base" planlı hesapla ve yalnız arama/getirme araçlarıyla
+  eklendi (derin araştırma, dilekçe ve sözleşme analizi araçları kapalı).
 - **Ajan:** harness döngüsü yerine harici koşucu. Her sistem için, yalnız o sistemin araçlarına
   izin verilen bir oturum ajanı görevleri `render` ile aldı, cevabı `record` ile kaydetti. Görev
   başına en çok 20 araç çağrısı. Bütün sistemlerde aynı model ve aynı istem.
@@ -21,16 +23,21 @@ olmadığını görmekti. Sayılar küçük örneklemden gelir ve güven aralık
 
 | Sistem | Sınav | Mevzuat | Karar bulma | Atıf denetimi | Açık araştırma | Genel | Ort. araç çağrısı |
 |---|---|---|---|---|---|---|---|
-| Yargı MCP + Mevzuat MCP | 100.0 | 100.0 | 100.0 | 100.0 | 95.1 | 99.0 | 4.31 |
-| Legaluga MCP¹ | 100.0 | 100.0 | 100.0 | 100.0 | 94.4 | 98.9 | 2.69 |
-| Genel web araması | 100.0 | 87.5 | 12.5 | 58.8 | 95.6 | 70.9 | 4.76 |
-| Kapalı kitap | 100.0 | 71.2 | 0.0 | 3.8 | 88.3 | 52.7 | 0 |
+| Legaluga MCP¹ | 100.0 | 100.0 | 100.0 | 100.0 | 97.5 | 99.5 | 2.69 |
+| De Jure MCP | 100.0 | 100.0 | 100.0 | 100.0 | 97.0 | 99.4 | 2.16 |
+| Yargı MCP + Mevzuat MCP | 100.0 | 100.0 | 100.0 | 100.0 | 96.3 | 99.3 | 4.31 |
+| Genel web araması | 100.0 | 87.5 | 12.5 | 58.8 | 96.8 | 71.1 | 4.76 |
+| Kapalı kitap | 100.0 | 71.2 | 0.0 | 3.8 | 91.4 | 53.3 | 0 |
 
 ¹ Legaluga Core API koşu boyunca HTTP 530 döndürüyordu: `search_cases_v1` çalışmadı,
 `semantik_ictihat_ara` yalnız Bedesten adaylarıyla çalıştı. Sonuçlar bu bozulmuş hâli yansıtır.
 
-Açık araştırmada sistemler arası farkların hepsi güven aralığının içinde (n = 5). Araştırma
-cevaplarında resmî kaynakta bulunamayan atıf oranı: web araması %2, diğerleri %0.
+Açık araştırma puanları, beş sistemin 25 cevabının tek bir kör hakem oturumunda birlikte
+(karışık sırada) puanlanmasıyla hesaplandı. Sistemler arası farkların hepsi güven aralığının
+içinde (n = 5). Araştırma cevaplarında Bedesten'de bulunamayan karar atfı: web araması %2 (1 atıf),
+De Jure %1,3 (1 atıf), diğerleri %0. De Jure'nin bulunamayan atfı (Yargıtay 3. HD 2026/2725 E.,
+2026/3805 K.) De Jure'nin kendi arşivinde var ama Bedesten'de yok; resmî Yargıtay karar arama
+servisi bu ortamdan erişilemediği için doğrulanamadı. Bu, uydurma olduğunun kanıtı değildir.
 
 ## Bulgular
 
@@ -43,10 +50,11 @@ cevaplarında resmî kaynakta bulunamayan atıf oranı: web araması %2, diğerl
    Atıf denetiminde MCP sistemleri bütün uydurma ve tarihi hatalı künyeleri yakaladı; web araması
    çoğu atfa "belirsiz" dedi (karar metinleri ücretli duvar arkasında ya da siteler erişimi
    engelliyor), kapalı kitap hepsine.
-3. **İki Bedesten tabanlı sistem bu görevlerde birbirinden ayrışmıyor.** Karar bulma, atıf
-   denetimi ve mevzuat görevleri, aynı resmî kaynağı arayan iki sistem için de kolay. Aradaki
-   tek belirgin fark verimlilik: Legaluga görev başına ortalama 2,69, açık kaynak 4,31 araç çağrısı
-   yaptı. İki sistemi ayırmak için daha zor görevler gerekiyor: anahtar kelimeyle bulunamayan
+3. **Üç uzman sistem bu görevlerde birbirinden ayrışmıyor.** Karar bulma, atıf denetimi ve
+   mevzuat görevleri Legaluga, De Jure ve açık kaynak araçların üçü için de kolay. Aradaki tek
+   belirgin fark verimlilik: görev başına ortalama araç çağrısı De Jure'de 2,16, Legaluga'da 2,69,
+   açık kaynakta 4,31. En zor karar bulma görevinde (case-038) De Jure 5, açık kaynak 4, Legaluga
+   10 çağrı yaptı. İki sistemi ayırmak için daha zor görevler gerekiyor: anahtar kelimeyle bulunamayan
    (eş anlamlı, dolaylı) olay anlatımları, Bedesten'in tam metin aramasının kaçırdığı kararlar,
    çok adımlı atıf zincirleri, mevzuatın eski hâlini isteyen sorular.
 4. **Kapalı kitap künye uydurmadı.** Araçsız model hiçbir karar numarası vermedi, bilmediği yeri boş
@@ -94,7 +102,9 @@ Pilot sırasında Legaluga araçlarında görülenler (Core kapalıyken):
 ## Sonraki adımlar
 
 1. Legaluga Core açıkken Legaluga koşusunu tekrarlamak.
-2. Harness ile (araç çıktıları kayıtlı) tam test bölümünü koşmak; dayanak oranını ölçmek.
-3. Bedesten tabanlı sistemleri ayırt edecek zor karar bulma ve araştırma görevleri eklemek.
-4. Yargı PRO ve Legal Data Hunter'ı (ücretli planla) eklemek; daha küçük bir ajan modeliyle
+2. De Jure'nin Bedesten dışı arşivini (Bedesten'de olmayan kararlar) adil puanlamak için ikinci
+   bir resmî doğrulama kaynağı (Yargıtay ve Danıştay karar arama) eklemek.
+3. Harness ile (araç çıktıları kayıtlı) tam test bölümünü koşmak; dayanak oranını ölçmek.
+4. Uzman sistemleri ayırt edecek zor karar bulma ve araştırma görevleri eklemek.
+5. Yargı PRO ve Legal Data Hunter'ı (ücretli planla) eklemek; daha küçük bir ajan modeliyle
    sınav track'ini tekrarlamak.
